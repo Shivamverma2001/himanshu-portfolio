@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Himanshu Verma - Portfolio Website
 
-## Getting Started
+A modern, aesthetic portfolio website with 3D effects and smooth transitions built with Next.js, Chakra UI, Framer Motion, and React Three Fiber.
 
-First, run the development server:
+## 🚀 Features
+
+- **3D Hero Section** with animated camera journey
+- **Smooth Scroll Navigation** with parallax effects
+- **Interactive 3D Cards** in Skills and Experience sections
+- **Portfolio Video Gallery** with modal playback
+- **Certificates & Testimonials** sections
+- **Contact Form** with social media links
+- **Fully Responsive** design
+- **Modern Animations** using Framer Motion
+
+## 🛠️ Tech Stack
+
+- **Next.js 16** (App Router)
+- **TypeScript**
+- **Chakra UI v3** - Component library
+- **Framer Motion** - Animations
+- **React Three Fiber** - 3D graphics
+- **Drei** - R3F helpers
+- **React Icons** - Icon library
+
+## 📦 Installation
+
+```bash
+npm install
+```
+
+## 🏃 Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 📁 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+portfolio-website/
+├── app/
+│   ├── components/
+│   │   ├── Navigation.tsx       # Top navigation bar
+│   │   ├── HeroSection.tsx       # Hero with 3D scene
+│   │   ├── AboutSection.tsx      # About me section
+│   │   ├── SkillsSection.tsx     # Skills & talents
+│   │   ├── ExperienceSection.tsx # Collaborations
+│   │   ├── PortfolioSection.tsx  # Video gallery
+│   │   ├── CertificatesSection.tsx # Certificates & testimonials
+│   │   ├── ContactSection.tsx    # Contact form
+│   │   └── Footer.tsx            # Footer
+│   ├── layout.tsx
+│   ├── page.tsx                  # Main page
+│   ├── providers.tsx             # Chakra UI provider
+│   └── globals.css
+└── public/                        # Static assets
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📝 Customization
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Adding Video Links
 
-## Deploy on Vercel
+Edit `app/components/PortfolioSection.tsx` and update the `portfolioItems` array with actual video URLs:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```typescript
+{
+  title: 'Hindi Introduction',
+  videoUrl: 'YOUR_YOUTUBE_OR_VIMEO_URL',
+  // ...
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Updating Content
+
+- Personal info: `app/components/AboutSection.tsx`
+- Skills: `app/components/SkillsSection.tsx`
+- Collaborations: `app/components/ExperienceSection.tsx`
+- Contact info: `app/components/ContactSection.tsx`
+
+## 🎨 Design Features
+
+- **Color Scheme**: Dark theme with gold/yellow accents
+- **3D Effects**: Subtle 3D rotations and transforms on hover
+- **Animations**: Smooth scroll-triggered animations
+- **Typography**: Clean, modern font hierarchy
+- **Responsive**: Mobile-first design approach
+
+## 📧 Contact
+
+For questions or customization, contact:
+- Email: himanshuverma1july2003@gmail.com
+- Phone: +91 99972 54939
+
+## 📄 License
+
+This project is private and proprietary.
