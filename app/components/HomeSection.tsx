@@ -71,7 +71,7 @@ export default function HomeSection() {
                     colorScheme="blue" 
                     size="lg"
                     onClick={() => {
-                      const element = document.querySelector('#about');
+                      const element = document.querySelector('#portfolio');
                       if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }}
                     _hover={{}}
@@ -110,7 +110,7 @@ export default function HomeSection() {
                   alignItems="center"
                   justifyContent="center"
                   onClick={() => {
-                    const element = document.querySelector('#about');
+                    const element = document.querySelector('#portfolio');
                     if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }}
                   _hover={{

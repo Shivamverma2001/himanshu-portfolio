@@ -4,6 +4,8 @@ import SkillsSection from './components/SkillsSection';
 import ExperienceSection from './components/ExperienceSection';
 import PortfolioSection from './components/PortfolioSection';
 import CertificatesSection from './components/CertificatesSection';
+import GallerySection from './components/GallerySection';
+import InsightsSection from './components/InsightsSection';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
 import HomeSection from './components/HomeSection';
@@ -15,6 +17,9 @@ export default function Home() {
       <Navigation />
       <HomeSection />
       <SectionTransition>
+        <PortfolioSection />
+      </SectionTransition>
+      <SectionTransition>
         <AboutSection />
       </SectionTransition>
       <SectionTransition>
@@ -24,10 +29,13 @@ export default function Home() {
         <ExperienceSection />
       </SectionTransition>
       <SectionTransition>
-        <PortfolioSection />
+        <GallerySection />
       </SectionTransition>
       <SectionTransition>
         <CertificatesSection />
+      </SectionTransition>
+      <SectionTransition>
+        <InsightsSection />
       </SectionTransition>
       <SectionTransition>
         <ContactSection />

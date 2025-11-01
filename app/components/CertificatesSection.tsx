@@ -11,7 +11,7 @@ import { Suspense } from 'react';
 import * as THREE from 'three';
 
 // Component to animate text letter by letter with typing effect
-function AnimatedSubtitle({ children }: { children: string }) {
+function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
   const letters = Array.from(children);
   
   return (
@@ -23,14 +23,17 @@ function AnimatedSubtitle({ children }: { children: string }) {
           <motion.span
             key={i}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: false }}
             transition={{
               duration: 0.01,
-              delay: i * 0.03,
+              delay: delay + i * 0.03,
+              ease: "linear"
             }}
             style={{ 
               display: 'inline-block',
               transform: 'translateZ(0)',
+              marginRight: '-0.1px'
             }}
           >
             {letter}
@@ -271,21 +274,18 @@ export default function CertificatesSection() {
               {certificates.map((cert, index) => (
                 <motion.div
                   key={cert.title}
-                  initial={{ opacity: 0, y: 50, rotateX: -90 }}
-                  whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: false, amount: 0.3 }}
                   transition={{ duration: 0.6, delay: index * 0.15 }}
-                  style={{ perspective: '1000px' }}
+                  style={{ height: '100%' }}
                 >
                   <motion.div
                     whileHover={{ 
-                      rotateY: 180,
                       scale: 1.05
                     }}
-                    style={{ 
-                      transformStyle: 'preserve-3d',
-                      transition: 'transform 0.6s',
-                    }}
+                    transition={{ duration: 0.2 }}
+                    style={{ height: '100%' }}
                   >
                     <Box
                       p={8}
@@ -296,14 +296,14 @@ export default function CertificatesSection() {
                       boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
                       _hover={{ 
                         borderColor: 'blue.500',
-                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)',
-                        transform: 'translateY(-4px)'
+                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
                       }}
                       transition="all 0.3s"
                       h="100%"
-                      backfaceVisibility="hidden"
+                      d="flex"
+                      flexDirection="column"
                     >
-                      <VStack gap={5} align="stretch">
+                      <VStack gap={5} align="stretch" h="100%">
                         <cert.icon size={40} color="#3B82F6" />
                         <VStack align="start" gap={2}>
                           <Text fontSize="xl" fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
@@ -333,7 +333,7 @@ export default function CertificatesSection() {
               transition={{ duration: 0.8 }}
             >
               <Text
-                fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
+                fontSize={{ base: '2xl', md: '3xl', lg: '3xl' }}
                 fontWeight="bold"
                 bgGradient="linear(to-r, blue.600, blue.500, gray.900)"
                 bgClip="text"
@@ -358,21 +358,21 @@ export default function CertificatesSection() {
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, scale: 0.9, rotateZ: -5 }}
-                  whileInView={{ opacity: 1, scale: 1, rotateZ: 0 }}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: false, amount: 0.3 }}
                   transition={{ duration: 0.6, delay: index * 0.2 }}
-                  style={{ perspective: '1000px' }}
+                  style={{ height: '100%' }}
                 >
                   <motion.div
                     whileHover={{ 
-                      rotateY: 5,
-                      rotateX: 5,
-                      z: 50
+                      scale: 1.05
                     }}
+                    transition={{ duration: 0.2 }}
+                    style={{ height: '100%' }}
                   >
                     <Box
-                      p={10}
+                      p={7}
                       bg="white"
                       borderRadius="xl"
                       borderLeftWidth="4px"
@@ -381,20 +381,21 @@ export default function CertificatesSection() {
                       position="relative"
                       _hover={{ 
                         borderLeftColor: 'blue.600',
-                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)',
-                        transform: 'translateY(-4px)'
+                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
                       }}
                       transition="all 0.3s"
                       h="100%"
+                      d="flex"
+                      flexDirection="column"
                     >
-                      <VStack gap={6} align="stretch">
+                      <VStack gap={4} align="stretch" h="100%">
                         <Text
-                          fontSize="lg"
+                          fontSize="sm"
                           color="gray.700"
                           fontStyle="italic"
                           lineHeight="tall"
-                          _before={{ content: '"\\201C"', fontSize: '4xl', color: 'blue.500' }}
-                          _after={{ content: '"\\201D"', fontSize: '4xl', color: 'blue.500' }}
+                          _before={{ content: '"\\201C"', fontSize: '2xl', color: 'blue.500' }}
+                          _after={{ content: '"\\201D"', fontSize: '2xl', color: 'blue.500' }}
                           fontFamily="var(--font-poppins)"
                         >
                           {testimonial.quote}

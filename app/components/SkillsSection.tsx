@@ -2,8 +2,8 @@
 
 import { Box, Container, VStack, Text, SimpleGrid, Badge, HStack } from '@chakra-ui/react';
 import GradientBG from './GradientBG';
-import { motion } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 import { 
   FaTheaterMasks, 
   FaMusic, 
@@ -20,7 +20,7 @@ import { Suspense } from 'react';
 import * as THREE from 'three';
 
 // Component to animate text letter by letter with typing effect
-function AnimatedSubtitle({ children }: { children: string }) {
+function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
   const letters = Array.from(children);
   
   return (
@@ -32,14 +32,17 @@ function AnimatedSubtitle({ children }: { children: string }) {
           <motion.span
             key={i}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: false }}
             transition={{
               duration: 0.01,
-              delay: i * 0.03,
+              delay: delay + i * 0.03,
+              ease: "linear"
             }}
             style={{ 
               display: 'inline-block',
               transform: 'translateZ(0)',
+              marginRight: '-0.1px'
             }}
           >
             {letter}
@@ -52,48 +55,56 @@ function AnimatedSubtitle({ children }: { children: string }) {
 
 const skills = [
   {
-    category: 'Acting',
-    items: ['Comedy', 'Drama', 'Emotional', 'Realistic'],
+    id: 'genre-acting',
+    category: 'Genre Acting',
+    items: ['Comedy', 'Drama'],
     icon: FaTheaterMasks,
     color: 'yellow',
   },
   {
-    category: 'Dancing',
-    items: ['Bollywood', 'Freestyle'],
-    icon: FaMusic,
+    id: 'method-acting',
+    category: 'Method Acting',
+    items: ['Emotional', 'Realistic'],
+    icon: FaTheaterMasks,
     color: 'yellow',
   },
   {
-    category: 'Martial Arts',
-    items: ['Taekwondo'],
-    icon: FaFistRaised,
-    color: 'yellow',
-  },
-  {
-    category: 'Sports',
-    items: ['Swimming'],
-    icon: FaSwimmer,
-    color: 'yellow',
-  },
-  {
+    id: 'creative',
     category: 'Creative',
     items: ['Scriptwriting', 'Concept Creation'],
     icon: FaPenFancy,
     color: 'yellow',
   },
   {
+    id: 'sports',
+    category: 'Sports',
+    items: ['Swimming', 'Taekwondo'],
+    icon: FaSwimmer,
+    color: 'yellow',
+  },
+  {
+    id: 'dancing',
+    category: 'Dancing',
+    items: ['Bollywood', 'Freestyle'],
+    icon: FaMusic,
+    color: 'yellow',
+  },
+  {
+    id: 'production',
     category: 'Production',
     items: ['Video Direction', 'Editing'],
     icon: FaVideo,
     color: 'yellow',
   },
   {
+    id: 'personal',
     category: 'Personal',
     items: ['Strong Observation', 'Listening Skills'],
     icon: FaEye,
     color: 'yellow',
   },
   {
+    id: 'communication',
     category: 'Communication',
     items: ['Improvisation', 'Expressive Communication'],
     icon: FaCommentDots,
@@ -220,6 +231,32 @@ function SkillsScene3D() {
 
 export default function SkillsSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const [shuffledSkills, setShuffledSkills] = useState(skills);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  useEffect(() => {
+    // Set initialized after initial fade-in completes (3 seconds)
+    const initTimer = setTimeout(() => {
+      setHasInitialized(true);
+    }, 3000);
+    
+    return () => clearTimeout(initTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!hasInitialized) return; // Don't rotate until initialization is complete
+    
+    const interval = setInterval(() => {
+      setShuffledSkills(prev => {
+        const newArr = [...prev];
+        const first = newArr.shift();
+        if (first) newArr.push(first);
+        return newArr;
+      });
+    }, 6000); // Rotate every 6 seconds after initialization
+    
+    return () => clearInterval(interval);
+  }, [hasInitialized]);
 
   return (
     <Box
@@ -277,25 +314,34 @@ export default function SkillsSection() {
             </Text>
           </motion.div>
 
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={8} w="100%">
-            {skills.map((skill, index) => (
-              <motion.div
-                key={skill.category}
-                initial={{ opacity: 0, y: 50, rotateY: -90 }}
-                whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                style={{ perspective: '1000px' }}
-              >
-                <motion.div
-                  whileHover={{ 
-                    scale: 1.05, 
-                    rotateY: 10,
-                    rotateX: 10,
-                    z: 50
-                  }}
-                  style={{ perspective: '1000px', transformStyle: 'preserve-3d' }}
-                >
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 2 }}
+            style={{ width: '100%' }}
+          >
+            <SimpleGrid 
+              columns={{ base: 1, md: 2, lg: 4 }} 
+              gap={8}
+              rowGap={{ base: 10, md: 20, lg: 24 }}
+              w="100%"
+            >
+              <AnimatePresence mode="popLayout">
+                {shuffledSkills.map((skill, index) => (
+                  <motion.div
+                    key={skill.id}
+                    layoutId={skill.id}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ 
+                      layout: { duration: 3, ease: "easeInOut" },
+                      opacity: { duration: 2, delay: index * 0.1 },
+                      scale: { duration: 2, delay: index * 0.1 }
+                    }}
+                  >
                   <Box
                     p={7}
                     bg="white"
@@ -310,7 +356,6 @@ export default function SkillsSection() {
                     }}
                     transition="all 0.3s"
                     h="100%"
-                    style={{ transformStyle: 'preserve-3d' }}
                   >
                     <VStack gap={5} align="stretch" h="100%">
                       <HStack gap={3}>
@@ -346,10 +391,11 @@ export default function SkillsSection() {
                       </VStack>
                     </VStack>
                   </Box>
-                </motion.div>
-              </motion.div>
-            ))}
-          </SimpleGrid>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </SimpleGrid>
+          </motion.div>
         </VStack>
       </Container>
     </Box>

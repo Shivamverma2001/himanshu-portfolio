@@ -11,7 +11,7 @@ import { useRef } from 'react';
 import * as THREE from 'three';
 
 // Component to animate text letter by letter with typing effect
-function AnimatedSubtitle({ children }: { children: string }) {
+function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
   const letters = Array.from(children);
   
   return (
@@ -23,14 +23,17 @@ function AnimatedSubtitle({ children }: { children: string }) {
           <motion.span
             key={i}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: false }}
             transition={{
               duration: 0.01,
-              delay: i * 0.03,
+              delay: delay + i * 0.03,
+              ease: "linear"
             }}
             style={{ 
               display: 'inline-block',
               transform: 'translateZ(0)',
+              marginRight: '-0.1px'
             }}
           >
             {letter}
@@ -217,14 +220,14 @@ export default function AboutSection() {
             {stats.map((stat, index) => (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <motion.div
-                  whileHover={{ scale: 1.05, rotateY: 5, rotateX: 5 }}
-                  style={{ perspective: '1000px' }}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <Box
                     p={6}
@@ -241,31 +244,33 @@ export default function AboutSection() {
                     transition="all 0.3s"
                     h="100%"
                   >
-                    <VStack gap={4} align="stretch">
-                      <stat.icon size={32} color="#3B82F6" />
-                      <VStack align="start" gap={1}>
-                        <Text color="gray.600" fontSize="sm" fontWeight="medium" fontFamily="var(--font-poppins)">
+                    <HStack gap={4} align="center" h="100%">
+                      <Box flexShrink={0}>
+                        <stat.icon size={40} color="#3B82F6" />
+                        <Text color="gray.600" fontSize="sm" fontWeight="medium" fontFamily="var(--font-poppins)" mt={2}>
                           {stat.label}
                         </Text>
-                        <Text color="blue.600" fontSize="xl" fontWeight="bold" fontFamily="var(--font-poppins)">
+                      </Box>
+                      <Box flex={1} textAlign="center">
+                        <Text color="blue.600" fontSize={{ base: 'xl', md: '2xl' }} fontWeight="bold" fontFamily="var(--font-poppins)">
                           {stat.value}
                         </Text>
-                      </VStack>
-                    </VStack>
+                      </Box>
+                    </HStack>
                   </Box>
                 </motion.div>
               </motion.div>
             ))}
           </Grid>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-            style={{ width: '100%', maxWidth: '900px' }}
-          >
-            <VStack gap={6} align="stretch">
+          <VStack gap={6} align="stretch" style={{ width: '100%', maxWidth: '900px' }}>
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              style={{ width: '100%' }}
+            >
               <Box
                 p={8}
                 bg="gray.50"
@@ -280,7 +285,15 @@ export default function AboutSection() {
                   and cinematic creativity.
                 </Text>
               </Box>
+            </motion.div>
 
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              style={{ width: '100%' }}
+            >
               <Box
                 p={8}
                 bg="gray.50"
@@ -298,7 +311,15 @@ export default function AboutSection() {
                   and brand commercials.
                 </Text>
               </Box>
+            </motion.div>
 
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: false, amount: 0.3 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              style={{ width: '100%' }}
+            >
               <Box
                 p={8}
                 bg="gray.50"
@@ -312,8 +333,8 @@ export default function AboutSection() {
                   continuing to collaborate with local and national brands to tell meaningful stories.
                 </Text>
               </Box>
-            </VStack>
-          </motion.div>
+            </motion.div>
+          </VStack>
         </VStack>
       </Container>
     </Box>

@@ -3,7 +3,7 @@
 import { Box, Container, VStack, Text, HStack, Link } from '@chakra-ui/react';
 import GradientBG from './GradientBG';
 import { motion } from 'framer-motion';
-import { FaInstagram, FaYoutube, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
+import { FaInstagram, FaYoutube, FaWhatsapp, FaEnvelope, FaSnapchat } from 'react-icons/fa';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -51,6 +51,11 @@ export default function Footer() {
             <Link href="mailto:himanshuverma1july2003@gmail.com">
               <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
                 <FaEnvelope size={24} color="#FFD700" />
+              </motion.div>
+            </Link>
+            <Link href="https://snapchat.com/add/himverma_" target="_blank" rel="noopener noreferrer">
+              <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
+                <FaSnapchat size={24} color="#FFFC00" />
               </motion.div>
             </Link>
           </HStack>

@@ -4,11 +4,45 @@ import { Box, Container, VStack, Text, HStack, Grid, GridItem, Badge } from '@ch
 import GradientBG from './GradientBG';
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
-import { FaTv, FaShoppingBag, FaGem, FaMobileAlt } from 'react-icons/fa';
+import { FaTv, FaShoppingBag, FaDumbbell, FaMobileAlt } from 'react-icons/fa';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { Suspense } from 'react';
 import * as THREE from 'three';
+
+// Component to animate text letter by letter with typing effect
+function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
+  const letters = Array.from(children);
+  
+  return (
+    <span>
+      {letters.map((letter, i) => (
+        letter === ' ' ? (
+          <span key={i}>&nbsp;</span>
+        ) : (
+          <motion.span
+            key={i}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: false }}
+            transition={{
+              duration: 0.01,
+              delay: delay + i * 0.03,
+              ease: "linear"
+            }}
+            style={{ 
+              display: 'inline-block',
+              transform: 'translateZ(0)',
+              marginRight: '-0.1px'
+            }}
+          >
+            {letter}
+          </motion.span>
+        )
+      ))}
+    </span>
+  );
+}
 
 const collaborations = [
   {
@@ -26,10 +60,10 @@ const collaborations = [
     color: 'yellow',
   },
   {
-    brand: 'Shivam Jewellers',
-    description: 'Diwali Gold Promotion',
-    icon: FaGem,
-    category: 'Jewellery',
+    brand: 'Amaze Fitness',
+    description: 'Gym & Fitness Promotions',
+    icon: FaDumbbell,
+    category: 'Gym',
     color: 'yellow',
   },
   {
@@ -138,14 +172,15 @@ export default function ExperienceSection() {
               Experience & Collaborations
             </Text>
             <Text
-              fontSize={{ base: 'md', md: 'lg' }}
+              fontSize={{ base: 'xl', md: '2xl' }}
               color="gray.700"
               textAlign="center"
               mt={4}
               maxW="800px"
               fontFamily="var(--font-poppins)"
+              fontWeight="bold"
             >
-              "I don't just promote brands — I tell their story through emotion, humor, and creativity."
+              <AnimatedSubtitle>"I don't just promote brands —  I tell their story through emotion, humor, and creativity."</AnimatedSubtitle>
             </Text>
           </motion.div>
 
@@ -157,19 +192,14 @@ export default function ExperienceSection() {
             {collaborations.map((collab, index) => (
               <motion.div
                 key={collab.brand}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50, rotateY: -15 }}
-                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50, scale: 0.9 }}
+                whileInView={{ opacity: 1, x: 0, scale: 1 }}
                 viewport={{ once: false, amount: 0.3 }}
                 transition={{ duration: 0.6, delay: index * 0.15 }}
-                style={{ perspective: '1000px' }}
               >
                 <motion.div
-                  whileHover={{ 
-                    scale: 1.03, 
-                    rotateY: 5,
-                    z: 50
-                  }}
-                  style={{ transformStyle: 'preserve-3d' }}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.2 }}
                 >
                   <Box
                     p={9}

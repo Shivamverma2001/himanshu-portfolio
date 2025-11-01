@@ -12,6 +12,7 @@ import {
   Button, 
   HStack, 
   Link,
+  createToaster,
 } from '@chakra-ui/react';
 import GradientBG from './GradientBG';
 import { motion } from 'framer-motion';
@@ -32,7 +33,7 @@ import { Suspense, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 // Component to animate text letter by letter with typing effect
-function AnimatedSubtitle({ children }: { children: string }) {
+function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
   const letters = Array.from(children);
   
   return (
@@ -44,14 +45,17 @@ function AnimatedSubtitle({ children }: { children: string }) {
           <motion.span
             key={i}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: false }}
             transition={{
               duration: 0.01,
-              delay: i * 0.03,
+              delay: delay + i * 0.03,
+              ease: "linear"
             }}
             style={{ 
               display: 'inline-block',
               transform: 'translateZ(0)',
+              marginRight: '-0.1px'
             }}
           >
             {letter}
@@ -259,20 +263,61 @@ function ContactScene3D() {
 
 export default function ContactSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const toaster = createToaster({ placement: 'top' });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to a server
-    console.log('Form submitted:', formData);
-    // For now, we'll use mailto as a fallback
-    const mailtoLink = `mailto:himanshuverma1july2003@gmail.com?subject=Collaboration Inquiry&body=${encodeURIComponent(formData.message)}`;
-    window.location.href = mailtoLink;
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Success
+        toaster.create({
+          type: 'success',
+          title: 'Message Sent Successfully!',
+          description: 'Thank you for contacting us. We\'ll get back to you soon.',
+          duration: 5000,
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          message: '',
+        });
+      } else {
+        // Error from API
+        throw new Error(data.error || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toaster.create({
+        type: 'error',
+        title: 'Failed to Send Message',
+        description: error instanceof Error ? error.message : 'Please try again later or contact us directly.',
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -398,7 +443,7 @@ export default function ContactSection() {
                       bg="gray.50"
                       borderColor="gray.300"
                       color="gray.800"
-                      rows={5}
+                      rows={8}
                       _hover={{ borderColor: 'blue.400' }}
                       _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
                       value={formData.message}
@@ -421,6 +466,8 @@ export default function ContactSection() {
                       color="white"
                       _hover={{ bgGradient: 'linear(to-r, blue.700, blue.600)' }}
                       fontFamily="var(--font-poppins)"
+                      loading={isSubmitting}
+                      loadingText="Sending..."
                     >
                       Send Message
                     </Button>
@@ -477,53 +524,12 @@ export default function ContactSection() {
                 </Box>
               </motion.div>
 
-              {/* Social Media */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                <Box
-                  p={8}
-                  bg="white"
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="blue.300"
-                  boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
-                >
-                  <VStack gap={6} align="stretch">
-                    <Text fontSize="xl" fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
-                      Follow Me
-                    </Text>
-                    <HStack gap={4} flexWrap="wrap">
-                      {socialLinks.map((social) => (
-                        <motion.div
-                          key={social.label}
-                          whileHover={{ scale: 1.1, rotate: 5 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Link href={social.link} target="_blank" rel="noopener noreferrer">
-                            <Button colorScheme={social.color} variant="outline">
-                              <HStack gap={2}>
-                                <social.icon />
-                                <span>{social.label}</span>
-                              </HStack>
-                            </Button>
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </HStack>
-                  </VStack>
-                </Box>
-              </motion.div>
-
               {/* Available Services */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <Box
                   p={8}
