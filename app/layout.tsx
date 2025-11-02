@@ -3,6 +3,7 @@ import { Inter, Poppins, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import CurtainMount from "./components/CurtainMount";
+import BackgroundMusic from "./components/BackgroundMusic";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -52,6 +53,7 @@ export default function RootLayout({
         />
         <Providers>
           <CurtainMount />
+          <BackgroundMusic />
           {children}
         </Providers>
       </body>

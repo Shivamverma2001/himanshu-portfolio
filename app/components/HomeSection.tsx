@@ -89,7 +89,7 @@ export default function HomeSection() {
   };
 
   return (
-    <Box id="home" bg="white" pt={{ base: '80px', md: 0 }} pb={{ base: 0, md: 0 }} h={{ base: 'auto', md: '100vh' }} style={{ scrollMarginTop: '96px' }} position="relative" overflow="hidden">
+    <Box id="home" bg="white" pt={{ base: '50px', md: '50px' }} pb={{ base: 0, md: 0 }} h={{ base: 'auto', md: '100vh' }} style={{ scrollMarginTop: '96px' }} position="relative" overflow="hidden">
       <GradientBG />
       <Box h="100%" maxW="1920px" mx="auto">
         <Grid templateColumns={{ base: '1fr', md: '55% 45%' }} gap={0} alignItems="stretch" h="100%">
@@ -176,7 +176,7 @@ export default function HomeSection() {
           </GridItem>
           <GridItem display="flex" alignItems="stretch">
             <Box w="100%" h={{ base: '480px', md: '100%' }} display="flex" alignItems="center" justifyContent="center">
-              <Box position="relative" w="100%" h="100%" bg="transparent" borderRadius={0} boxShadow="none" p={0}>
+              <Box position="relative" w="100%" h="100%" bg="transparent" borderRadius={0} boxShadow="none" p={0} mt={{ base: 0, md: '80px' }}>
                 <Box ref={imageRef} position="relative" w="100%" h="100%" borderRadius={0}>
                   <motion.div
                     initial={{ opacity: 0 }}

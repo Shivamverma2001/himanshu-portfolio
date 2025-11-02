@@ -43,3 +43,8 @@ next-env.d.ts
 # Data cache
 /data
 data/
+
+# Large media files
+*.MOV
+*.mov
+public/myimages/*.MOV

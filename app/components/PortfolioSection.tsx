@@ -8,6 +8,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { useMusicStore } from './BackgroundMusic';
 
 // Component to animate text letter by letter with typing effect
 function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
@@ -790,6 +791,7 @@ export default function PortfolioSection() {
   const ref = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<string>('');
+  const { setIsVideoPlaying } = useMusicStore();
   
   // Flatten portfolio groups into a single array
   const allPortfolioItems = portfolioGroups.flat();
@@ -826,11 +828,13 @@ export default function PortfolioSection() {
     const embedUrl = convertToEmbedUrl(videoUrl);
     setSelectedVideo(embedUrl);
     setIsOpen(true);
+    setIsVideoPlaying(true); // Pause background music
   };
 
   const handleClose = () => {
     setIsOpen(false);
     setSelectedVideo('');
+    setIsVideoPlaying(false); // Resume background music
   };
 
   return (
