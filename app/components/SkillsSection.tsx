@@ -106,7 +106,7 @@ const skills = [
   {
     id: 'communication',
     category: 'Communication',
-    items: ['Improvisation', 'Expressive Communication'],
+    items: ['Improvisation', 'Expressive Communcation'],
     icon: FaCommentDots,
     color: 'yellow',
   },
@@ -263,7 +263,7 @@ export default function SkillsSection() {
       id="skills"
       ref={ref}
       minH="100vh"
-      py={20}
+      py={{ base: 12, md: 16, lg: 20 }}
       bg="#F8F9FA"
       position="relative"
       overflow="hidden"
@@ -285,7 +285,7 @@ export default function SkillsSection() {
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack gap={16}>
+        <VStack gap={{ base: 8, md: 12, lg: 16 }}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -322,9 +322,9 @@ export default function SkillsSection() {
             style={{ width: '100%' }}
           >
             <SimpleGrid 
-              columns={{ base: 1, md: 2, lg: 4 }} 
-              gap={8}
-              rowGap={{ base: 10, md: 20, lg: 24 }}
+              columns={{ base: 2, md: 3, lg: 4 }} 
+              gap={{ base: 4, md: 6, lg: 8 }}
+              rowGap={{ base: 4, md: 6, lg: 8 }}
               w="100%"
             >
               <AnimatePresence mode="popLayout">
@@ -343,7 +343,7 @@ export default function SkillsSection() {
                     }}
                   >
                   <Box
-                    p={7}
+                    p={{ base: 4, md: 6, lg: 7 }}
                     bg="white"
                     borderRadius="xl"
                     borderWidth="2px"
@@ -357,19 +357,27 @@ export default function SkillsSection() {
                     transition="all 0.3s"
                     h="100%"
                   >
-                    <VStack gap={5} align="stretch" h="100%">
-                      <HStack gap={3}>
-                        <skill.icon size={28} color="#3B82F6" />
+                    <VStack gap={{ base: 3, md: 5 }} align="stretch" h="100%">
+                      <HStack gap={3} align="center">
+                        <Box display={{ base: 'none', md: 'block' }} flexShrink={0}>
+                          <skill.icon size={28} color="#3B82F6" />
+                        </Box>
+                        <Box display={{ base: 'block', md: 'none' }} flexShrink={0}>
+                          <skill.icon size={24} color="#3B82F6" />
+                        </Box>
                         <Text
-                          fontSize="xl"
+                          fontSize={{ base: 'sm', md: 'lg', lg: 'xl' }}
                           fontWeight="bold"
                           color="gray.900"
                           fontFamily="var(--font-poppins)"
+                          whiteSpace="normal"
+                          wordBreak="break-word"
+                          flex={1}
                         >
                           {skill.category}
                         </Text>
                       </HStack>
-                      <VStack gap={3} align="stretch">
+                      <VStack gap={{ base: 2, md: 3 }} align="stretch">
                         {skill.items.map((item) => (
                           <Badge
                             key={item}
@@ -378,12 +386,15 @@ export default function SkillsSection() {
                             color="blue.700"
                             borderWidth="1px"
                             borderColor="blue.200"
-                            p={3}
+                            p={{ base: 2, md: 3 }}
                             borderRadius="md"
                             fontFamily="var(--font-poppins)"
                             textAlign="center"
-                            fontSize="sm"
+                            fontSize={{ base: 'xs', md: 'sm' }}
                             fontWeight="medium"
+                            whiteSpace="normal"
+                            wordBreak="break-word"
+                            maxW="100%"
                           >
                             {item}
                           </Badge>

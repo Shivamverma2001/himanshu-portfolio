@@ -1,14 +1,13 @@
 'use client';
 
-import { Box, Container, VStack, Text, HStack, Grid, GridItem, Badge } from '@chakra-ui/react';
+import { Box, Container, VStack, Text, HStack, Grid, GridItem, Badge, Button } from '@chakra-ui/react';
 import GradientBG from './GradientBG';
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
-import { FaTv, FaShoppingBag, FaDumbbell, FaMobileAlt } from 'react-icons/fa';
+import { useRef, useState, useEffect } from 'react';
+import { FaTv, FaShoppingBag, FaDumbbell, FaMobileAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { Suspense } from 'react';
-import * as THREE from 'three';
 
 // Component to animate text letter by letter with typing effect
 function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
@@ -126,13 +125,72 @@ function ExperienceScene3D() {
 
 export default function ExperienceSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(collaborations.length);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [slidePercentage, setSlidePercentage] = useState(100);
+  const [isCarousel, setIsCarousel] = useState(true);
+
+  // Track if we should show carousel or grid
+  useEffect(() => {
+    const updateLayout = () => {
+      const width = window.innerWidth;
+      setIsCarousel(width < 768);
+      if (width < 768) {
+        setSlidePercentage(100);
+      } else {
+        setSlidePercentage(50);
+      }
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+
+  // Carousel navigation
+  useEffect(() => {
+    if (currentIndex >= collaborations.length * 2) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex(collaborations.length);
+        setIsTransitioning(false);
+      }, 50);
+    }
+    if (currentIndex < 0) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex(collaborations.length - 1);
+        setIsTransitioning(false);
+      }, 50);
+    }
+  }, [currentIndex]);
+
+  // Auto-scroll for carousel only
+  useEffect(() => {
+    if (!isCarousel) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isCarousel]);
+
+  const goToPrevious = () => {
+    setCurrentIndex((prevIndex) => prevIndex - 1);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prevIndex) => prevIndex + 1);
+  };
 
   return (
     <Box
       id="experience"
       ref={ref}
       minH="100vh"
-      py={20}
+      py={{ base: 12, md: 16, lg: 20 }}
       bg="white"
       position="relative"
       overflow="hidden"
@@ -154,7 +212,7 @@ export default function ExperienceSection() {
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack gap={16}>
+        <VStack gap={{ base: 8, md: 12, lg: 16 }}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -184,68 +242,202 @@ export default function ExperienceSection() {
             </Text>
           </motion.div>
 
-          <Grid
-            templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(2, 1fr)' }}
-            gap={10}
-            w="100%"
-          >
-            {collaborations.map((collab, index) => (
-              <motion.div
-                key={collab.brand}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50, scale: 0.9 }}
-                whileInView={{ opacity: 1, x: 0, scale: 1 }}
-                viewport={{ once: false, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: index * 0.15 }}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
+          {/* Carousel/Grid Container */}
+          <Box position="relative" w="100%">
+            {/* Navigation Buttons - Only show for carousel */}
+            {isCarousel && (
+              <>
+                <Button
+                  position="absolute"
+                  left={4}
+                  top="50%"
+                  transform="translateY(-50%)"
+                  borderRadius="full"
+                  bg="white"
+                  color="blue.600"
+                  boxShadow="0 4px 12px rgba(0, 0, 0, 0.15)"
+                  _hover={{
+                    bg: 'blue.50',
+                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                    transform: 'translateY(-50%) scale(1.1)'
+                  }}
+                  transition="all 0.3s"
+                  onClick={goToPrevious}
+                  zIndex={10}
+                  size={{ base: 'md', md: 'lg' }}
                 >
+                  <FaChevronLeft />
+                </Button>
+                <Button
+                  position="absolute"
+                  right={4}
+                  top="50%"
+                  transform="translateY(-50%)"
+                  borderRadius="full"
+                  bg="white"
+                  color="blue.600"
+                  boxShadow="0 4px 12px rgba(0, 0, 0, 0.15)"
+                  _hover={{
+                    bg: 'blue.50',
+                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                    transform: 'translateY(-50%) scale(1.1)'
+                  }}
+                  transition="all 0.3s"
+                  onClick={goToNext}
+                  zIndex={10}
+                  size={{ base: 'md', md: 'lg' }}
+                >
+                  <FaChevronRight />
+                </Button>
+              </>
+            )}
+
+            {/* Content */}
+            {isCarousel ? (
+              <Box
+                ref={carouselRef}
+                display="flex"
+                gap={{ base: 4, md: 5, lg: 6 }}
+                style={{
+                  transform: `translateX(-${currentIndex * slidePercentage}%)`,
+                  transition: isTransitioning ? 'none' : 'transform 0.5s ease-in-out',
+                }}
+                w="100%"
+              >
+                {[...collaborations, ...collaborations, ...collaborations].map((collab, index) => (
                   <Box
-                    p={9}
-                    bg="white"
-                    borderRadius="xl"
-                    borderWidth="2px"
-                    borderColor="blue.200"
-                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
-                    _hover={{ 
-                      borderColor: 'blue.500',
-                      boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)',
-                      transform: 'translateY(-4px)'
-                    }}
-                    transition="all 0.3s"
-                    h="100%"
+                    key={`${collab.brand}-${index}`}
+                    flex={{ base: '0 0 calc(100% - 24px)' }}
+                    maxW={{ base: 'calc(100% - 24px)' }}
                   >
-                    <VStack gap={5} align="stretch">
-                      <HStack gap={4}>
-                         <collab.icon 
-                          size={32} 
-                          color="#3B82F6"
-                        />
-                        <VStack align="start" gap={1}>
-                          <Text
-                            fontSize="2xl"
-                            fontWeight="bold"
-                            color="gray.900"
-                            fontFamily="var(--font-poppins)"
-                          >
-                            {collab.brand}
-                          </Text>
-                           <Badge colorScheme="blue" fontSize="xs" px={2} py={1} fontFamily="var(--font-poppins)">
-                            {collab.category}
-                          </Badge>
-                        </VStack>
-                      </HStack>
-                      <Box h="1px" bg="gray.200" w="100%" my={2} />
-                      <Text color="gray.700" fontSize="md" fontFamily="var(--font-poppins)">
-                        {collab.description}
-                      </Text>
-                    </VStack>
+                    <Box
+                      p={{ base: 4, md: 6, lg: 9 }}
+                      bg="white"
+                      borderRadius="xl"
+                      borderWidth="2px"
+                      borderColor="blue.200"
+                      boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
+                      _hover={{ 
+                        borderColor: 'blue.500',
+                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)',
+                        transform: 'translateY(-4px)'
+                      }}
+                      transition="all 0.3s"
+                      h="100%"
+                    >
+                      <VStack gap={{ base: 3, md: 4, lg: 5 }} align="stretch">
+                        <HStack gap={{ base: 2, md: 4 }}>
+                          <Box display={{ base: 'none', lg: 'block' }}>
+                            <collab.icon size={32} color="#3B82F6" />
+                          </Box>
+                          <Box display={{ base: 'block', md: 'none' }}>
+                            <collab.icon size={24} color="#3B82F6" />
+                          </Box>
+                          <Box display={{ base: 'none', md: 'block', lg: 'none' }}>
+                            <collab.icon size={28} color="#3B82F6" />
+                          </Box>
+                          <VStack align="start" gap={{ base: 0.5, md: 1 }}>
+                            <Text
+                              fontSize={{ base: 'md', md: 'xl', lg: '2xl' }}
+                              fontWeight="bold"
+                              color="gray.900"
+                              fontFamily="var(--font-poppins)"
+                            >
+                              {collab.brand}
+                            </Text>
+                            <Badge colorScheme="blue" fontSize={{ base: '2xs', md: 'xs' }} px={2} py={1} fontFamily="var(--font-poppins)">
+                              {collab.category}
+                            </Badge>
+                          </VStack>
+                        </HStack>
+                        <Box h="1px" bg="gray.200" w="100%" my={2} />
+                        <Text color="gray.700" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} fontFamily="var(--font-poppins)">
+                          {collab.description}
+                        </Text>
+                      </VStack>
+                    </Box>
                   </Box>
-                </motion.div>
-              </motion.div>
-            ))}
-          </Grid>
+                ))}
+              </Box>
+            ) : (
+              <Grid
+                templateColumns={{ md: 'repeat(2, 1fr)' }}
+                gap={{ base: 6, md: 8, lg: 10 }}
+                w="100%"
+              >
+                {collaborations.map((collab, index) => (
+                  <motion.div
+                    key={collab.brand}
+                    initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50, scale: 0.9 }}
+                    whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                    viewport={{ once: false, amount: 0.3 }}
+                    transition={{ duration: 0.6, delay: index * 0.15 }}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Box
+                        p={{ base: 4, md: 6, lg: 9 }}
+                        bg="white"
+                        borderRadius="xl"
+                        borderWidth="2px"
+                        borderColor="blue.200"
+                        boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
+                        _hover={{ 
+                          borderColor: 'blue.500',
+                          boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)',
+                          transform: 'translateY(-4px)'
+                        }}
+                        transition="all 0.3s"
+                        h="100%"
+                      >
+                        <VStack gap={{ base: 3, md: 4, lg: 5 }} align="stretch">
+                          <HStack gap={{ base: 2, md: 4 }}>
+                            <Box display={{ base: 'none', lg: 'block' }}>
+                              <collab.icon 
+                                size={32} 
+                                color="#3B82F6"
+                              />
+                            </Box>
+                            <Box display={{ base: 'block', md: 'none' }}>
+                              <collab.icon 
+                                size={24} 
+                                color="#3B82F6"
+                              />
+                            </Box>
+                            <Box display={{ base: 'none', md: 'block', lg: 'none' }}>
+                              <collab.icon 
+                                size={28} 
+                                color="#3B82F6"
+                              />
+                            </Box>
+                            <VStack align="start" gap={{ base: 0.5, md: 1 }}>
+                              <Text
+                                fontSize={{ base: 'md', md: 'xl', lg: '2xl' }}
+                                fontWeight="bold"
+                                color="gray.900"
+                                fontFamily="var(--font-poppins)"
+                              >
+                                {collab.brand}
+                              </Text>
+                              <Badge colorScheme="blue" fontSize={{ base: '2xs', md: 'xs' }} px={2} py={1} fontFamily="var(--font-poppins)">
+                                {collab.category}
+                              </Badge>
+                            </VStack>
+                          </HStack>
+                          <Box h="1px" bg="gray.200" w="100%" my={2} />
+                          <Text color="gray.700" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} fontFamily="var(--font-poppins)">
+                            {collab.description}
+                          </Text>
+                        </VStack>
+                      </Box>
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </Grid>
+            )}
+          </Box>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -255,7 +447,7 @@ export default function ExperienceSection() {
             style={{ width: '100%', maxWidth: '900px' }}
           >
               <Box
-                p={8}
+                p={{ base: 4, md: 6, lg: 8 }}
                 bg="gray.50"
                 borderRadius="xl"
                 borderWidth="1px"
@@ -263,16 +455,16 @@ export default function ExperienceSection() {
                 boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
               >
               <Text
-                fontSize="lg"
+                fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}
                 fontWeight="semibold"
                 color="blue.600"
-                mb={4}
+                mb={{ base: 3, md: 4 }}
                 textAlign="center"
                 fontFamily="var(--font-poppins)"
               >
                 Department Categories Covered
               </Text>
-              <HStack gap={3} flexWrap="wrap" justify="center">
+              <HStack gap={{ base: 2, md: 3 }} flexWrap="wrap" justify="center">
                 {categories.map((category) => (
                   <motion.div
                     key={category}
@@ -281,10 +473,10 @@ export default function ExperienceSection() {
                   >
                       <Badge
                       colorScheme="blue"
-                      p={2}
-                      px={4}
+                      p={{ base: 1, md: 2 }}
+                      px={{ base: 3, md: 4 }}
                       borderRadius="full"
-                      fontSize="sm"
+                      fontSize={{ base: 'xs', md: 'sm' }}
                       fontFamily="var(--font-poppins)"
                     >
                       {category}

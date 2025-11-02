@@ -325,7 +325,7 @@ export default function ContactSection() {
       id="contact"
       ref={ref}
       minH="100vh"
-      py={20}
+      py={{ base: 12, md: 16, lg: 20 }}
       bg="#F8F9FA"
       position="relative"
       overflow="hidden"
@@ -347,7 +347,7 @@ export default function ContactSection() {
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack gap={12}>
+        <VStack gap={{ base: 8, md: 10, lg: 12 }}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -376,7 +376,7 @@ export default function ContactSection() {
             </Text>
           </motion.div>
 
-          <SimpleGrid columns={{ base: 1, lg: 2 }} gap={12} w="100%">
+          <SimpleGrid columns={{ base: 1, lg: 2 }} gap={{ base: 6, md: 8, lg: 12 }} w="100%">
             {/* Contact Form */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -385,21 +385,23 @@ export default function ContactSection() {
               transition={{ duration: 0.8 }}
             >
               <Box
-                p={8}
+                p={{ base: 4, md: 6, lg: 8 }}
                 bg="white"
                 borderRadius="xl"
                 borderWidth="2px"
                 borderColor="blue.300"
                 boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
               >
-                <VStack gap={6} as="form" onSubmit={handleSubmit}>
+                <VStack gap={{ base: 4, md: 5, lg: 6 }} as="form" onSubmit={handleSubmit}>
                   <Box w="100%">
-                    <Text color="gray.700" mb={2} fontSize="sm" fontWeight="semibold">Name</Text>
+                    <Text color="gray.700" mb={2} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold">Name</Text>
                     <Input
                       type="text"
                       bg="gray.50"
                       borderColor="gray.300"
                       color="gray.800"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      size={{ base: 'md', md: 'lg' }}
                       _hover={{ borderColor: 'blue.400' }}
                       _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
                       value={formData.name}
@@ -409,12 +411,14 @@ export default function ContactSection() {
                   </Box>
 
                   <Box w="100%">
-                    <Text color="gray.700" mb={2} fontSize="sm" fontWeight="semibold">Email</Text>
+                    <Text color="gray.700" mb={2} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold">Email</Text>
                     <Input
                       type="email"
                       bg="gray.50"
                       borderColor="gray.300"
                       color="gray.800"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      size={{ base: 'md', md: 'lg' }}
                       _hover={{ borderColor: 'blue.400' }}
                       _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
                       value={formData.email}
@@ -424,12 +428,14 @@ export default function ContactSection() {
                   </Box>
 
                   <Box w="100%">
-                    <Text color="gray.700" mb={2} fontSize="sm" fontWeight="semibold">Phone (Optional)</Text>
+                    <Text color="gray.700" mb={2} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold">Phone (Optional)</Text>
                     <Input
                       type="tel"
                       bg="gray.50"
                       borderColor="gray.300"
                       color="gray.800"
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      size={{ base: 'md', md: 'lg' }}
                       _hover={{ borderColor: 'blue.400' }}
                       _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
                       value={formData.phone}
@@ -438,12 +444,14 @@ export default function ContactSection() {
                   </Box>
 
                   <Box w="100%">
-                    <Text color="gray.700" mb={2} fontSize="sm" fontWeight="semibold">Message</Text>
+                    <Text color="gray.700" mb={2} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold">Message</Text>
                     <Textarea
                       bg="gray.50"
                       borderColor="gray.300"
                       color="gray.800"
+                      fontSize={{ base: 'sm', md: 'md' }}
                       rows={8}
+                      minH={{ base: '120px', md: '150px' }}
                       _hover={{ borderColor: 'blue.400' }}
                       _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)' }}
                       value={formData.message}
@@ -460,10 +468,11 @@ export default function ContactSection() {
                     <Button
                       type="submit"
                       colorScheme="blue"
-                      size="lg"
+                      size={{ base: 'md', md: 'lg' }}
                       w="100%"
                       bgGradient="linear(to-r, blue.600, blue.500)"
                       color="white"
+                      fontSize={{ base: 'sm', md: 'md' }}
                       _hover={{ bgGradient: 'linear(to-r, blue.700, blue.600)' }}
                       fontFamily="var(--font-poppins)"
                       loading={isSubmitting}
@@ -477,7 +486,7 @@ export default function ContactSection() {
             </motion.div>
 
             {/* Contact Info & Services */}
-            <VStack gap={8} align="stretch">
+            <VStack gap={{ base: 6, md: 7, lg: 8 }} align="stretch">
               {/* Contact Information */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
@@ -486,15 +495,15 @@ export default function ContactSection() {
                 transition={{ duration: 0.8 }}
               >
                 <Box
-                  p={8}
+                  p={{ base: 4, md: 6, lg: 8 }}
                   bg="white"
                   borderRadius="xl"
                   borderWidth="2px"
                   borderColor="blue.300"
                   boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
                 >
-                  <VStack gap={6} align="stretch">
-                    <Text fontSize="xl" fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
+                  <VStack gap={{ base: 4, md: 5, lg: 6 }} align="stretch">
+                    <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
                       Get In Touch
                     </Text>
                     {contactInfo.map((info, index) => (
@@ -504,15 +513,20 @@ export default function ContactSection() {
                         transition={{ duration: 0.2 }}
                       >
                         <Link href={info.link} target="_blank" rel="noopener noreferrer">
-                          <HStack gap={4}>
+                          <HStack gap={{ base: 3, md: 4 }}>
                             <Box color="blue.500">
-                              <info.icon size={24} />
+                              <Box display={{ base: 'none', md: 'block' }}>
+                                <info.icon size={24} />
+                              </Box>
+                              <Box display={{ base: 'block', md: 'none' }}>
+                                <info.icon size={20} />
+                              </Box>
                             </Box>
                             <VStack align="start" gap={0}>
-                              <Text fontSize="xs" color="gray.600" fontFamily="var(--font-poppins)">
+                              <Text fontSize={{ base: '2xs', md: 'xs' }} color="gray.600" fontFamily="var(--font-poppins)">
                                 {info.label}
                               </Text>
-                              <Text fontSize="md" color="gray.800" fontFamily="var(--font-poppins)">
+                              <Text fontSize={{ base: 'sm', md: 'md' }} color="gray.800" fontFamily="var(--font-poppins)">
                                 {info.value}
                               </Text>
                             </VStack>
@@ -532,15 +546,15 @@ export default function ContactSection() {
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <Box
-                  p={8}
+                  p={{ base: 4, md: 6, lg: 8 }}
                   bg="white"
                   borderRadius="xl"
                   borderWidth="2px"
                   borderColor="blue.300"
                   boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
                 >
-                  <VStack gap={6} align="stretch">
-                    <Text fontSize="xl" fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
+                  <VStack gap={{ base: 4, md: 5, lg: 6 }} align="stretch">
+                    <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
                       Available For
                     </Text>
                     {services.map((service) => (
@@ -549,15 +563,20 @@ export default function ContactSection() {
                         whileHover={{ scale: 1.02, x: 5 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <HStack gap={4}>
+                        <HStack gap={{ base: 3, md: 4 }}>
                           <Box color="blue.500">
-                            <service.icon size={24} />
+                            <Box display={{ base: 'none', md: 'block' }}>
+                              <service.icon size={24} />
+                            </Box>
+                            <Box display={{ base: 'block', md: 'none' }}>
+                              <service.icon size={20} />
+                            </Box>
                           </Box>
                           <VStack align="start" gap={0}>
-                            <Text fontSize="md" fontWeight="semibold" color="gray.800" fontFamily="var(--font-poppins)">
+                            <Text fontSize={{ base: 'sm', md: 'md' }} fontWeight="semibold" color="gray.800" fontFamily="var(--font-poppins)">
                               {service.title}
                             </Text>
-                            <Text fontSize="sm" color="gray.600" fontFamily="var(--font-poppins)">
+                            <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" fontFamily="var(--font-poppins)">
                               {service.description}
                             </Text>
                           </VStack>

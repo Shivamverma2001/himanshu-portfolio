@@ -1,10 +1,10 @@
 'use client';
 
-import { Box, Container, VStack, Text, SimpleGrid, HStack } from '@chakra-ui/react';
+import { Box, Container, VStack, Text, HStack, Button } from '@chakra-ui/react';
 import GradientBG from './GradientBG';
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
-import { FaAward, FaTrophy, FaCertificate, FaTheaterMasks } from 'react-icons/fa';
+import { useRef, useState, useEffect } from 'react';
+import { FaAward, FaTrophy, FaCertificate, FaTheaterMasks, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { Suspense } from 'react';
@@ -211,13 +211,133 @@ function CertificatesScene3D() {
 
 export default function CertificatesSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const carouselRef1 = useRef<HTMLDivElement>(null);
+  const carouselRef2 = useRef<HTMLDivElement>(null);
+  
+  // State for certificates carousel
+  const [currentIndex1, setCurrentIndex1] = useState(certificates.length);
+  const [isTransitioning1, setIsTransitioning1] = useState(false);
+  const [slidePercentage1, setSlidePercentage1] = useState(100);
+  const [itemWidth1, setItemWidth1] = useState('calc(100% - 24px)');
+  const [isCarousel1, setIsCarousel1] = useState(true);
+  
+  // State for testimonials carousel
+  const [currentIndex2, setCurrentIndex2] = useState(testimonials.length);
+  const [isTransitioning2, setIsTransitioning2] = useState(false);
+  const [slidePercentage2, setSlidePercentage2] = useState(100);
+  const [isCarousel2, setIsCarousel2] = useState(true);
+
+  // Track if we should show carousel or grid for certificates
+  useEffect(() => {
+    const updateLayout = () => {
+      const width = window.innerWidth;
+      setIsCarousel1(width < 1024); // Carousel for mobile and tablet, grid for laptop
+      if (width < 768) {
+        setSlidePercentage1(100); // 1 item on mobile
+        setItemWidth1('calc(100% - 24px)');
+      } else if (width < 1024) {
+        setSlidePercentage1(50); // 2 items on tablet
+        setItemWidth1('calc(50% - 12px)');
+      } else {
+        setSlidePercentage1(33.333); // Not used (grid is shown)
+        setItemWidth1('calc(33.333% - 16px)');
+      }
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+
+  // Track if we should show carousel or grid for testimonials
+  useEffect(() => {
+    const updateLayout = () => {
+      const width = window.innerWidth;
+      setIsCarousel2(width < 780);
+      if (width < 780) {
+        setSlidePercentage2(100); // 1 item on mobile
+      } else {
+        setSlidePercentage2(50); // 2 items on desktop
+      }
+    };
+
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, []);
+
+  // Handle infinite scroll for certificates
+  useEffect(() => {
+    if (currentIndex1 >= certificates.length * 2) {
+      setIsTransitioning1(true);
+      setTimeout(() => {
+        setCurrentIndex1(certificates.length);
+        setIsTransitioning1(false);
+      }, 50);
+    }
+    if (currentIndex1 < 0) {
+      setIsTransitioning1(true);
+      setTimeout(() => {
+        setCurrentIndex1(certificates.length - 1);
+        setIsTransitioning1(false);
+      }, 50);
+    }
+  }, [currentIndex1]);
+
+  // Handle infinite scroll for testimonials
+  useEffect(() => {
+    if (currentIndex2 >= testimonials.length * 2) {
+      setIsTransitioning2(true);
+      setTimeout(() => {
+        setCurrentIndex2(testimonials.length);
+        setIsTransitioning2(false);
+      }, 50);
+    }
+    if (currentIndex2 < 0) {
+      setIsTransitioning2(true);
+      setTimeout(() => {
+        setCurrentIndex2(testimonials.length - 1);
+        setIsTransitioning2(false);
+      }, 50);
+    }
+  }, [currentIndex2]);
+
+  // Navigation functions for certificates
+  const goToPrevious1 = () => setCurrentIndex1(prev => prev - 1);
+  const goToNext1 = () => setCurrentIndex1(prev => prev + 1);
+
+  // Navigation functions for testimonials
+  const goToPrevious2 = () => setCurrentIndex2(prev => prev - 1);
+  const goToNext2 = () => setCurrentIndex2(prev => prev + 1);
+
+  // Auto-scroll for certificates carousel only
+  useEffect(() => {
+    if (!isCarousel1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex1((prevIndex) => prevIndex + 1);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isCarousel1]);
+
+  // Auto-scroll for testimonials carousel only
+  useEffect(() => {
+    if (!isCarousel2) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex2((prevIndex) => prevIndex + 1);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isCarousel2]);
 
   return (
     <Box
       id="certificates"
       ref={ref}
       minH="100vh"
-      py={20}
+      py={{ base: 12, md: 16, lg: 20 }}
       bg="white"
       position="relative"
       overflow="hidden"
@@ -239,7 +359,7 @@ export default function CertificatesSection() {
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack gap={20}>
+        <VStack gap={{ base: 10, md: 15, lg: 20 }}>
           {/* Certificates */}
           <VStack gap={10} w="100%">
             <motion.div
@@ -270,58 +390,191 @@ export default function CertificatesSection() {
               </Text>
             </motion.div>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6} w="100%">
-              {certificates.map((cert, index) => (
-                <motion.div
-                  key={cert.title}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.3 }}
-                  transition={{ duration: 0.6, delay: index * 0.15 }}
-                  style={{ height: '100%' }}
-                >
-                  <motion.div
-                    whileHover={{ 
-                      scale: 1.05
+            <Box position="relative" w="100%">
+              {/* Navigation Buttons - Only show for carousel */}
+              {isCarousel1 && (
+                <>
+                  <Button
+                    position="absolute"
+                    left={4}
+                    top="50%"
+                    transform="translateY(-50%)"
+                    borderRadius="full"
+                    bg="white"
+                    color="blue.600"
+                    boxShadow="0 4px 12px rgba(0, 0, 0, 0.15)"
+                    _hover={{
+                      bg: 'blue.50',
+                      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                      transform: 'translateY(-50%) scale(1.1)'
                     }}
-                    transition={{ duration: 0.2 }}
-                    style={{ height: '100%' }}
+                    transition="all 0.3s"
+                    onClick={goToPrevious1}
+                    zIndex={10}
+                    size={{ base: 'md', md: 'lg' }}
                   >
+                    <FaChevronLeft />
+                  </Button>
+                  <Button
+                    position="absolute"
+                    right={4}
+                    top="50%"
+                    transform="translateY(-50%)"
+                    borderRadius="full"
+                    bg="white"
+                    color="blue.600"
+                    boxShadow="0 4px 12px rgba(0, 0, 0, 0.15)"
+                    _hover={{
+                      bg: 'blue.50',
+                      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                      transform: 'translateY(-50%) scale(1.1)'
+                    }}
+                    transition="all 0.3s"
+                    onClick={goToNext1}
+                    zIndex={10}
+                    size={{ base: 'md', md: 'lg' }}
+                  >
+                    <FaChevronRight />
+                  </Button>
+                </>
+              )}
+
+              {/* Content */}
+              {isCarousel1 ? (
+                <Box
+                  ref={carouselRef1}
+                  display="flex"
+                  gap={{ base: 4, md: 5, lg: 6 }}
+                  style={{
+                    transform: `translateX(-${currentIndex1 * slidePercentage1}%)`,
+                    transition: isTransitioning1 ? 'none' : 'transform 0.5s ease-in-out',
+                  }}
+                  w="100%"
+                >
+                  {[...certificates, ...certificates, ...certificates].map((cert, index) => (
                     <Box
-                      p={8}
-                      bg="white"
-                      borderRadius="xl"
-                      borderWidth="2px"
-                      borderColor="blue.200"
-                      boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
-                      _hover={{ 
-                        borderColor: 'blue.500',
-                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
-                      }}
-                      transition="all 0.3s"
-                      h="100%"
-                      d="flex"
-                      flexDirection="column"
+                      key={`${cert.title}-${index}`}
+                      flex={`0 0 ${itemWidth1}`}
+                      maxW={itemWidth1}
                     >
-                      <VStack gap={5} align="stretch" h="100%">
-                        <cert.icon size={40} color="#3B82F6" />
-                        <VStack align="start" gap={2}>
-                          <Text fontSize="xl" fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
-                            {cert.title}
-                          </Text>
-                          <Text fontSize="sm" color="gray.600" fontFamily="var(--font-poppins)">
-                            {cert.issuer} • {cert.year}
-                          </Text>
-                        </VStack>
-                        <Text fontSize="sm" color="gray.700" fontFamily="var(--font-poppins)">
-                          {cert.description}
-                        </Text>
-                      </VStack>
+                      <motion.div
+                        whileHover={{ 
+                          scale: 1.05
+                        }}
+                        transition={{ duration: 0.2 }}
+                        style={{ height: '100%' }}
+                      >
+                        <Box
+                          p={{ base: 4, md: 6, lg: 8 }}
+                          bg="white"
+                          borderRadius="xl"
+                          borderWidth="2px"
+                          borderColor="blue.200"
+                          boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
+                          _hover={{ 
+                            borderColor: 'blue.500',
+                            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
+                          }}
+                          transition="all 0.3s"
+                          h="100%"
+                          d="flex"
+                          flexDirection="column"
+                        >
+                          <VStack gap={{ base: 3, md: 4, lg: 5 }} align="stretch" h="100%">
+                            <HStack gap={3}>
+                              <Box display={{ base: 'none', lg: 'block' }}>
+                                <cert.icon size={40} color="#3B82F6" />
+                              </Box>
+                              <Box display={{ base: 'block', md: 'none' }}>
+                                <cert.icon size={28} color="#3B82F6" />
+                              </Box>
+                              <Box display={{ base: 'none', md: 'block', lg: 'none' }}>
+                                <cert.icon size={32} color="#3B82F6" />
+                              </Box>
+                            </HStack>
+                            <VStack align="start" gap={{ base: 1, md: 2 }}>
+                              <Text fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
+                                {cert.title}
+                              </Text>
+                              <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" fontFamily="var(--font-poppins)">
+                                {cert.issuer} • {cert.year}
+                              </Text>
+                            </VStack>
+                            <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.700" fontFamily="var(--font-poppins)">
+                              {cert.description}
+                            </Text>
+                          </VStack>
+                        </Box>
+                      </motion.div>
                     </Box>
-                  </motion.div>
-                </motion.div>
-              ))}
-            </SimpleGrid>
+                  ))}
+                </Box>
+              ) : (
+                <Box display="grid" gridTemplateColumns={{ md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={{ base: 4, md: 5, lg: 6 }} w="100%">
+                  {certificates.map((cert, index) => (
+                    <Box key={cert.title}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.3 }}
+                        transition={{ duration: 0.6, delay: index * 0.15 }}
+                        style={{ height: '100%' }}
+                      >
+                        <motion.div
+                          whileHover={{ 
+                            scale: 1.05
+                          }}
+                          transition={{ duration: 0.2 }}
+                          style={{ height: '100%' }}
+                        >
+                          <Box
+                            p={{ base: 4, md: 6, lg: 8 }}
+                            bg="white"
+                            borderRadius="xl"
+                            borderWidth="2px"
+                            borderColor="blue.200"
+                            boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
+                            _hover={{ 
+                              borderColor: 'blue.500',
+                              boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
+                            }}
+                            transition="all 0.3s"
+                            h="100%"
+                            d="flex"
+                            flexDirection="column"
+                          >
+                            <VStack gap={{ base: 3, md: 4, lg: 5 }} align="stretch" h="100%">
+                              <HStack gap={3}>
+                                <Box display={{ base: 'none', lg: 'block' }}>
+                                  <cert.icon size={40} color="#3B82F6" />
+                                </Box>
+                                <Box display={{ base: 'block', md: 'none' }}>
+                                  <cert.icon size={28} color="#3B82F6" />
+                                </Box>
+                                <Box display={{ base: 'none', md: 'block', lg: 'none' }}>
+                                  <cert.icon size={32} color="#3B82F6" />
+                                </Box>
+                              </HStack>
+                              <VStack align="start" gap={{ base: 1, md: 2 }}>
+                                <Text fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontWeight="bold" color="gray.900" fontFamily="var(--font-poppins)">
+                                  {cert.title}
+                                </Text>
+                                <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" fontFamily="var(--font-poppins)">
+                                  {cert.issuer} • {cert.year}
+                                </Text>
+                              </VStack>
+                              <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.700" fontFamily="var(--font-poppins)">
+                                {cert.description}
+                              </Text>
+                            </VStack>
+                          </Box>
+                        </motion.div>
+                      </motion.div>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
           </VStack>
 
           {/* Testimonials */}
@@ -354,84 +607,223 @@ export default function CertificatesSection() {
               </Text>
             </motion.div>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} w="100%">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.3 }}
-                  transition={{ duration: 0.6, delay: index * 0.2 }}
-                  style={{ height: '100%' }}
-                >
-                  <motion.div
-                    whileHover={{ 
-                      scale: 1.05
+            <Box position="relative" w="100%">
+              {/* Navigation Buttons - Only show for carousel */}
+              {isCarousel2 && (
+                <>
+                  <Button
+                    position="absolute"
+                    left={4}
+                    top="50%"
+                    transform="translateY(-50%)"
+                    borderRadius="full"
+                    bg="white"
+                    color="blue.600"
+                    boxShadow="0 4px 12px rgba(0, 0, 0, 0.15)"
+                    _hover={{
+                      bg: 'blue.50',
+                      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                      transform: 'translateY(-50%) scale(1.1)'
                     }}
-                    transition={{ duration: 0.2 }}
-                    style={{ height: '100%' }}
+                    transition="all 0.3s"
+                    onClick={goToPrevious2}
+                    zIndex={10}
+                    size={{ base: 'md', md: 'lg' }}
                   >
+                    <FaChevronLeft />
+                  </Button>
+                  <Button
+                    position="absolute"
+                    right={4}
+                    top="50%"
+                    transform="translateY(-50%)"
+                    borderRadius="full"
+                    bg="white"
+                    color="blue.600"
+                    boxShadow="0 4px 12px rgba(0, 0, 0, 0.15)"
+                    _hover={{
+                      bg: 'blue.50',
+                      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                      transform: 'translateY(-50%) scale(1.1)'
+                    }}
+                    transition="all 0.3s"
+                    onClick={goToNext2}
+                    zIndex={10}
+                    size={{ base: 'md', md: 'lg' }}
+                  >
+                    <FaChevronRight />
+                  </Button>
+                </>
+              )}
+
+              {/* Content */}
+              {isCarousel2 ? (
+                <Box
+                  ref={carouselRef2}
+                  display="flex"
+                  gap={{ base: 4, md: 6, lg: 8 }}
+                  style={{
+                    transform: `translateX(-${currentIndex2 * slidePercentage2}%)`,
+                    transition: isTransitioning2 ? 'none' : 'transform 0.5s ease-in-out',
+                  }}
+                  w="100%"
+                >
+                  {[...testimonials, ...testimonials, ...testimonials].map((testimonial, index) => (
                     <Box
-                      p={7}
-                      bg="white"
-                      borderRadius="xl"
-                      borderLeftWidth="4px"
-                      borderLeftColor="blue.500"
-                      boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
-                      position="relative"
-                      _hover={{ 
-                        borderLeftColor: 'blue.600',
-                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
-                      }}
-                      transition="all 0.3s"
-                      h="100%"
-                      d="flex"
-                      flexDirection="column"
+                      key={`${index}`}
+                      flex={{ base: '0 0 calc(100% - 32px)', md: '0 0 calc(50% - 32px)' }}
+                      maxW={{ base: 'calc(100% - 32px)', md: 'calc(50% - 32px)' }}
                     >
-                      <VStack gap={4} align="stretch" h="100%">
-                        <Text
-                          fontSize="sm"
-                          color="gray.700"
-                          fontStyle="italic"
-                          lineHeight="tall"
-                          _before={{ content: '"\\201C"', fontSize: '2xl', color: 'blue.500' }}
-                          _after={{ content: '"\\201D"', fontSize: '2xl', color: 'blue.500' }}
-                          fontFamily="var(--font-poppins)"
+                      <motion.div
+                        whileHover={{ 
+                          scale: 1.05
+                        }}
+                        transition={{ duration: 0.2 }}
+                        style={{ height: '100%' }}
+                      >
+                        <Box
+                          p={{ base: 4, md: 6, lg: 7 }}
+                          bg="white"
+                          borderRadius="xl"
+                          borderLeftWidth="4px"
+                          borderLeftColor="blue.500"
+                          boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
+                          position="relative"
+                          _hover={{ 
+                            borderLeftColor: 'blue.600',
+                            boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
+                          }}
+                          transition="all 0.3s"
+                          h="100%"
+                          d="flex"
+                          flexDirection="column"
                         >
-                          {testimonial.quote}
-                        </Text>
-                        <Box h="1px" bg="gray.200" w="100%" my={4} />
-                        <HStack gap={3}>
-                          <Box
-                            w="40px"
-                            h="40px"
-                            borderRadius="full"
-                            bgGradient="linear(to-r, blue.500, blue.400)"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            color="white"
-                            fontWeight="bold"
-                            fontSize="md"
-                            boxShadow="0 4px 10px rgba(59, 130, 246, 0.3)"
-                          >
-                            {testimonial.author.charAt(0)}
-                          </Box>
-                          <VStack align="start" gap={1}>
-                            <Text fontSize="sm" fontWeight="semibold" color="gray.800" fontFamily="var(--font-poppins)">
-                              {testimonial.author}
+                          <VStack gap={{ base: 3, md: 4 }} align="stretch" h="100%">
+                            <Text
+                              fontSize={{ base: 'xs', md: 'sm' }}
+                              color="gray.700"
+                              fontStyle="italic"
+                              lineHeight="tall"
+                              _before={{ content: '"\\201C"', fontSize: 'xl', color: 'blue.500' }}
+                              _after={{ content: '"\\201D"', fontSize: 'xl', color: 'blue.500' }}
+                              fontFamily="var(--font-poppins)"
+                            >
+                              {testimonial.quote}
                             </Text>
-                            <Text fontSize="xs" color="gray.600" fontFamily="var(--font-poppins)">
-                              {testimonial.role}
-                            </Text>
+                            <Box h="1px" bg="gray.200" w="100%" my={{ base: 2, md: 4 }} />
+                            <HStack gap={{ base: 2, md: 3 }}>
+                              <Box
+                                w={{ base: '32px', md: '40px' }}
+                                h={{ base: '32px', md: '40px' }}
+                                borderRadius="full"
+                                bgGradient="linear(to-r, blue.500, blue.400)"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                color="white"
+                                fontWeight="bold"
+                                fontSize={{ base: 'sm', md: 'md' }}
+                                boxShadow="0 4px 10px rgba(59, 130, 246, 0.3)"
+                              >
+                                {testimonial.author.charAt(0)}
+                              </Box>
+                              <VStack align="start" gap={{ base: 0.5, md: 1 }}>
+                                <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold" color="gray.800" fontFamily="var(--font-poppins)">
+                                  {testimonial.author}
+                                </Text>
+                                <Text fontSize={{ base: '2xs', md: 'xs' }} color="gray.600" fontFamily="var(--font-poppins)">
+                                  {testimonial.role}
+                                </Text>
+                              </VStack>
+                            </HStack>
                           </VStack>
-                        </HStack>
-                      </VStack>
+                        </Box>
+                      </motion.div>
                     </Box>
-                  </motion.div>
-                </motion.div>
-              ))}
-            </SimpleGrid>
+                  ))}
+                </Box>
+              ) : (
+                <Box display="grid" gridTemplateColumns={{ md: 'repeat(2, 1fr)' }} gap={{ base: 4, md: 6, lg: 8 }} w="100%">
+                  {testimonials.map((testimonial, index) => (
+                    <Box key={index}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.3 }}
+                        transition={{ duration: 0.6, delay: index * 0.2 }}
+                        style={{ height: '100%' }}
+                      >
+                        <motion.div
+                          whileHover={{ 
+                            scale: 1.05
+                          }}
+                          transition={{ duration: 0.2 }}
+                          style={{ height: '100%' }}
+                        >
+                          <Box
+                            p={{ base: 4, md: 6, lg: 7 }}
+                            bg="white"
+                            borderRadius="xl"
+                            borderLeftWidth="4px"
+                            borderLeftColor="blue.500"
+                            boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
+                            position="relative"
+                            _hover={{ 
+                              borderLeftColor: 'blue.600',
+                              boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)'
+                            }}
+                            transition="all 0.3s"
+                            h="100%"
+                            d="flex"
+                            flexDirection="column"
+                          >
+                            <VStack gap={{ base: 3, md: 4 }} align="stretch" h="100%">
+                              <Text
+                                fontSize={{ base: 'xs', md: 'sm' }}
+                                color="gray.700"
+                                fontStyle="italic"
+                                lineHeight="tall"
+                                _before={{ content: '"\\201C"', fontSize: 'xl', color: 'blue.500' }}
+                                _after={{ content: '"\\201D"', fontSize: 'xl', color: 'blue.500' }}
+                                fontFamily="var(--font-poppins)"
+                              >
+                                {testimonial.quote}
+                              </Text>
+                              <Box h="1px" bg="gray.200" w="100%" my={{ base: 2, md: 4 }} />
+                              <HStack gap={{ base: 2, md: 3 }}>
+                                <Box
+                                  w={{ base: '32px', md: '40px' }}
+                                  h={{ base: '32px', md: '40px' }}
+                                  borderRadius="full"
+                                  bgGradient="linear(to-r, blue.500, blue.400)"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  color="white"
+                                  fontWeight="bold"
+                                  fontSize={{ base: 'sm', md: 'md' }}
+                                  boxShadow="0 4px 10px rgba(59, 130, 246, 0.3)"
+                                >
+                                  {testimonial.author.charAt(0)}
+                                </Box>
+                                <VStack align="start" gap={{ base: 0.5, md: 1 }}>
+                                  <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold" color="gray.800" fontFamily="var(--font-poppins)">
+                                    {testimonial.author}
+                                  </Text>
+                                  <Text fontSize={{ base: '2xs', md: 'xs' }} color="gray.600" fontFamily="var(--font-poppins)">
+                                    {testimonial.role}
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                            </VStack>
+                          </Box>
+                        </motion.div>
+                      </motion.div>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Box>
           </VStack>
         </VStack>
       </Container>

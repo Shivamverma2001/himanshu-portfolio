@@ -102,16 +102,33 @@ const portfolioGroups = [
 ];
 
 const shorts = [
-  'https://youtube.com/shorts/VfsogEcmYhU?si=SeZPLsxkSvTBWmFe',
-  'https://www.instagram.com/reel/DPtyEAKAdiw/?igsh=c3dsYmlhYXhlNTZ3',
-  'https://youtube.com/shorts/VfsogEcmYhU?si=SeZPLsxkSvTBWmFe',
-  'https://www.instagram.com/reel/DPtyEAKAdiw/?igsh=c3dsYmlhYXhlNTZ3',
-  'https://youtube.com/shorts/VfsogEcmYhU?si=SeZPLsxkSvTBWmFe',
-  'https://www.instagram.com/reel/DPtyEAKAdiw/?igsh=c3dsYmlhYXhlNTZ3',
-  'https://youtube.com/shorts/VfsogEcmYhU?si=SeZPLsxkSvTBWmFe',
-  'https://www.instagram.com/reel/DPtyEAKAdiw/?igsh=c3dsYmlhYXhlNTZ3',
-  'https://youtube.com/shorts/VfsogEcmYhU?si=SeZPLsxkSvTBWmFe',
-  'https://www.instagram.com/reel/DPtyEAKAdiw/?igsh=c3dsYmlhYXhlNTZ3',
+  // Series 1 - Comedy / Light Acting
+  'https://www.instagram.com/reel/DNAIwSQh_NQ/?igsh=MWt4NzFsZmFsbXlpZA==',
+  'https://www.instagram.com/reel/DNCy9lRBiqF/?igsh=MXdnNzAxOThxdTV2YQ==',
+  'https://www.instagram.com/reel/DNFKWh-hTdj/?igsh=MTZ2cXEwejEzbzQxbg==',
+  
+  // Series 2 - Romantic / Intense Acting
+  'https://www.instagram.com/reel/DNNqWeuIekf/?igsh=OGttMGh5dW45NjFs',
+  'https://www.instagram.com/reel/DNQYUPNhAbj/?igsh=MXIyMXZuaWl6OHZ6',
+  'https://www.instagram.com/reel/DNTIQAChSKc/?igsh=MWRkcHQ0ZHhxMDhobQ==',
+  
+  // Series 3 - Motivation / Drama
+  'https://www.instagram.com/reel/DNTU_gyhtQs/?igsh=MXBocGhrazZ3OTk4NQ==',
+  'https://www.instagram.com/reel/DNVmlVbhBWv/?igsh=YXl1bXo2aTJwZ3Bo',
+  'https://www.instagram.com/reel/DNX7U2JoyRb/?igsh=bWRyZHNtcmU1azNu',
+  'https://www.instagram.com/reel/DNZ-Yghhfr9/?igsh=OHZicG02YjZyM3d4',
+  
+  // Top Viral Reels
+  'https://www.instagram.com/reel/DM3AqO-IRMr/?igsh=MTZhNHl1OTNuN2U0Ng==',
+  'https://www.instagram.com/reel/DPy5EFOATIN/?igsh=dXN4ZjI4MDRlYjNu',
+  'https://www.instagram.com/reel/DPJe-xygbN7/?igsh=eWdyYnU5NnAxd2Y4',
+  'https://www.instagram.com/reel/DMSvNVah8PH/?igsh=c285ODh6MXNoZTFo',
+  'https://www.instagram.com/reel/DMPuJJ6hunX/?igsh=MXUxOHdlOGFxYjRxOA==',
+  'https://www.instagram.com/reel/DMVHw0hB8QL/?igsh=MXB1aXRnMm0xczY4NA==',
+  'https://www.instagram.com/reel/DJ9LqVxhE2c/?igsh=MTR5anhxamcwcWU3bg==',
+  'https://www.instagram.com/reel/DKCu_Z1hVTN/?igsh=YTMwMGxwMWw4YnM2',
+  'https://www.instagram.com/reel/DKHYAjLhu-L/?igsh=MXAybmVyd3M1c2xyMw==',
+  'https://www.instagram.com/reel/DLU9ojAxs1o/?igsh=d2hwOXN4OGl4bzFu',
 ];
 
 // Animated Portfolio Camera
@@ -281,6 +298,38 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
   const [currentIndex, setCurrentIndex] = useState(items.length); // Start in middle of duplicated items
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [slidePercentage, setSlidePercentage] = useState(33.333);
+  const [itemWidth, setItemWidth] = useState('calc(100% - 16px)');
+  
+  useEffect(() => {
+    const updateSlidePercentage = () => {
+      const width = window.innerWidth;
+      if (width < 560) {
+        setSlidePercentage(100); // 1 item on mobile
+        setItemWidth('calc(100% - 16px)');
+      } else if (width < 800) {
+        // Gradual transition from 1.2 to 2 items
+        // At 560: 1.2 items (83.33%), at 800: 2 items (50%)
+        const progress = (width - 560) / (800 - 560); // 0 to 1
+        const itemsVisible = 1.2 + progress * 0.8; // 1.2 to 2
+        setSlidePercentage(100 / itemsVisible);
+        setItemWidth(`calc(${100 / itemsVisible}% - 16px)`);
+      } else if (width < 1024) {
+        // Gradual transition from 2 to 3 items
+        const progress = (width - 800) / (1024 - 800); // 0 to 1
+        const itemsVisible = 2 + progress * 1; // 2 to 3
+        setSlidePercentage(100 / itemsVisible);
+        setItemWidth(`calc(${100 / itemsVisible}% - 16px)`);
+      } else {
+        setSlidePercentage(33.333); // 3 items on desktop
+        setItemWidth('calc(33.333% - 21.33px)');
+      }
+    };
+    
+    updateSlidePercentage();
+    window.addEventListener('resize', updateSlidePercentage);
+    return () => window.removeEventListener('resize', updateSlidePercentage);
+  }, []);
 
   const isYouTubeUrl = (url: string): boolean => {
     return /youtube\.com|youtu\.be/.test(url);
@@ -393,7 +442,7 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
         transition="all 0.3s"
         onClick={goToPrevious}
         zIndex={10}
-        size="lg"
+        size={{ base: 'md', md: 'lg' }}
       >
         <FaChevronLeft />
       </Button>
@@ -416,7 +465,7 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
         transition="all 0.3s"
         onClick={goToNext}
         zIndex={10}
-        size="lg"
+        size={{ base: 'md', md: 'lg' }}
       >
         <FaChevronRight />
       </Button>
@@ -424,9 +473,9 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
       <Box
         ref={carouselRef}
         display="flex"
-        gap={8}
+        gap={{ base: 4, md: 8 }}
         style={{
-          transform: `translateX(-${currentIndex * 33.333}%)`,
+          transform: `translateX(-${currentIndex * slidePercentage}%)`,
           transition: isTransitioning ? 'none' : 'transform 0.5s ease-in-out',
         }}
         w="100%"
@@ -434,8 +483,8 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
         {[...items, ...items, ...items].map((item, index) => (
           <Box
             key={`${item.title}-${index}`}
-            flex="0 0 calc(33.333% - 21.33px)"
-            maxW="calc(33.333% - 21.33px)"
+            flex={`0 0 ${itemWidth}`}
+            maxW={itemWidth}
             position="relative"
             bg="white"
             borderRadius="xl"
@@ -480,9 +529,9 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
               </Box>
             </Box>
 
-            <VStack p={6} align="stretch" gap={2}>
+            <VStack p={{ base: 4, md: 5, lg: 6 }} align="stretch" gap={{ base: 2, md: 2 }}>
               <HStack justify="space-between">
-                <Text fontSize="sm" color="gray.900" fontWeight="semibold" fontFamily="var(--font-poppins)">
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.900" fontWeight="semibold" fontFamily="var(--font-poppins)">
                   {item.category}
                 </Text>
                 {item.platform === 'instagram' ? (
@@ -491,10 +540,10 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
                   <FaYoutube size={20} color="gray.500" />
                 )}
               </HStack>
-              <Text fontSize="lg" fontWeight="bold" color="gray.800" fontFamily="var(--font-poppins)">
+              <Text fontSize={{ base: 'md', md: 'lg', lg: 'xl' }} fontWeight="bold" color="gray.800" fontFamily="var(--font-poppins)">
                 {item.title}
               </Text>
-              <Text fontSize="sm" color="gray.700" fontFamily="var(--font-poppins)">
+              <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.700" fontFamily="var(--font-poppins)">
                 {item.description}
               </Text>
             </VStack>
@@ -506,29 +555,44 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
 }
 
 // Shorts Carousel Component
-function ShortsCarousel({ videos }: { videos: string[] }) {
+function ShortsCarousel({ videos, onVideoClick }: { videos: string[], onVideoClick: (url: string) => void }) {
   const [currentIndex, setCurrentIndex] = useState(videos.length); // Start in middle of duplicated items
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  const isYouTubeUrl = (url: string): boolean => {
-    return /youtube\.com|youtu\.be/.test(url);
-  };
+  const [slidePercentage, setSlidePercentage] = useState(20);
+  const [itemWidth, setItemWidth] = useState('calc(66.667% - 8px)');
+  
+  useEffect(() => {
+    const updateSlidePercentage = () => {
+      const width = window.innerWidth;
+      if (width < 395) {
+        setSlidePercentage(100); // 1 item visible on small mobile
+        setItemWidth('calc(100% - 8px)');
+      } else if (width < 497) {
+        setSlidePercentage(66.667); // 1.5 items visible on larger mobile
+        setItemWidth('calc(66.667% - 8px)');
+      } else if (width < 620) {
+        setSlidePercentage(50); // 2 items visible
+        setItemWidth('calc(50% - 8px)');
+      } else if (width < 768) {
+        setSlidePercentage(33.333); // 3 items visible
+        setItemWidth('calc(33.333% - 8px)');
+      } else if (width < 1024) {
+        setSlidePercentage(25); // 4 items visible on tablet
+        setItemWidth('calc(25% - 8px)');
+      } else {
+        setSlidePercentage(20); // 5 items visible on desktop
+        setItemWidth('calc(20% - 16px)');
+      }
+    };
+    
+    updateSlidePercentage();
+    window.addEventListener('resize', updateSlidePercentage);
+    return () => window.removeEventListener('resize', updateSlidePercentage);
+  }, []);
 
   const isInstagramUrl = (url: string): boolean => {
     return /instagram\.com/.test(url);
-  };
-
-  const getYouTubeVideoId = (url: string): string | null => {
-    // Handle YouTube Shorts URL: https://youtube.com/shorts/VIDEO_ID
-    const shortsMatch = url.match(/youtube\.com\/shorts\/([^&\n?#]+)/);
-    if (shortsMatch) {
-      return shortsMatch[1];
-    }
-    // Handle regular YouTube URLs
-    const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
-    const match = url.match(youtubeRegex);
-    return match ? match[1] : null;
   };
 
   const getInstagramEmbedUrl = (url: string): string => {
@@ -541,17 +605,14 @@ function ShortsCarousel({ videos }: { videos: string[] }) {
     return '';
   };
 
-  const getEmbedUrl = (url: string): string => {
-    if (isYouTubeUrl(url)) {
-      const videoId = getYouTubeVideoId(url);
-      if (videoId) {
-        return `https://www.youtube.com/embed/${videoId}?playlist=${videoId}&loop=1`;
-      }
-    }
+  const convertToEmbedUrl = (url: string, loop: boolean = false): string => {
+    if (url.startsWith('/')) return url;
+    
     if (isInstagramUrl(url)) {
       return getInstagramEmbedUrl(url);
     }
-    return '';
+    
+    return url;
   };
 
   useEffect(() => {
@@ -626,7 +687,7 @@ function ShortsCarousel({ videos }: { videos: string[] }) {
         transition="all 0.3s"
         onClick={goToPrevious}
         zIndex={10}
-        size="lg"
+        size={{ base: 'md', md: 'lg' }}
       >
         <FaChevronLeft />
       </Button>
@@ -649,7 +710,7 @@ function ShortsCarousel({ videos }: { videos: string[] }) {
         transition="all 0.3s"
         onClick={goToNext}
         zIndex={10}
-        size="lg"
+        size={{ base: 'md', md: 'lg' }}
       >
         <FaChevronRight />
       </Button>
@@ -657,9 +718,9 @@ function ShortsCarousel({ videos }: { videos: string[] }) {
       <Box
         ref={carouselRef}
         display="flex"
-        gap={4}
+        gap={{ base: 2, md: 4 }}
         style={{
-          transform: `translateX(-${currentIndex * 20}%)`,
+          transform: `translateX(-${currentIndex * slidePercentage}%)`,
           transition: isTransitioning ? 'none' : 'transform 0.5s ease-in-out',
         }}
         w="100%"
@@ -667,8 +728,8 @@ function ShortsCarousel({ videos }: { videos: string[] }) {
         {[...videos, ...videos, ...videos].map((url, index) => (
           <Box
             key={`${url}-${index}`}
-            flex="0 0 calc(20% - 16px)"
-            maxW="calc(20% - 16px)"
+            flex={`0 0 ${itemWidth}`}
+            maxW={itemWidth}
             position="relative"
             overflow="hidden"
             borderRadius="xl"
@@ -682,12 +743,15 @@ function ShortsCarousel({ videos }: { videos: string[] }) {
               transform: 'translateY(-4px)'
             }}
             transition="all 0.3s"
-            cursor={isInstagramUrl(url) ? 'pointer' : 'default'}
-            onClick={isInstagramUrl(url) ? () => window.open(url, '_blank') : undefined}
+            cursor="pointer"
+            onClick={() => onVideoClick(url)}
           >
+            {/* Video Preview */}
             <Box
               position="relative"
               pb="177.78%" // 9:16 aspect ratio for shorts
+              overflow="hidden"
+              bg="gray.200"
             >
               <motion.iframe
                 style={{
@@ -695,11 +759,24 @@ function ShortsCarousel({ videos }: { videos: string[] }) {
                   top: 0,
                   left: 0,
                   width: '100%',
-                  height: '100%'
+                  height: '100%',
+                  pointerEvents: 'none'
                 }}
-                src={getEmbedUrl(url)}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                src={convertToEmbedUrl(url, false)}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               />
+            </Box>
+            
+            {/* Instagram Badge Below Video */}
+            <Box
+              p={{ base: 2, md: 3 }}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              borderTopWidth="1px"
+              borderColor="gray.200"
+            >
+              <FaInstagram size={20} color="#E4405F" />
             </Box>
           </Box>
         ))}
@@ -760,7 +837,7 @@ export default function PortfolioSection() {
       id="portfolio"
       ref={ref}
       minH="100vh"
-      py={20}
+      py={{ base: 12, md: 16, lg: 20 }}
       bg="#F8F9FA"
       position="relative"
       overflow="hidden"
@@ -782,7 +859,7 @@ export default function PortfolioSection() {
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack gap={12}>
+        <VStack gap={{ base: 8, md: 10, lg: 12 }}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -815,7 +892,7 @@ export default function PortfolioSection() {
           <PortfolioCarousel items={allPortfolioItems} onVideoClick={handleVideoClick} />
 
           {/* Shorts Carousel */}
-          <ShortsCarousel videos={shorts} />
+          <ShortsCarousel videos={shorts} onVideoClick={handleVideoClick} />
 
           {/* Video Modal */}
           <AnimatePresence>

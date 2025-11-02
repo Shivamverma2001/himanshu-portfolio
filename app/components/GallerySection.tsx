@@ -55,6 +55,24 @@ function GalleryCarousel() {
   const [currentIndex, setCurrentIndex] = useState(galleryImages.length);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [slidePercentage, setSlidePercentage] = useState(33.333);
+
+  useEffect(() => {
+    const updateSlidePercentage = () => {
+      const width = window.innerWidth;
+      if (width < 768) {
+        setSlidePercentage(100);
+      } else if (width < 1024) {
+        setSlidePercentage(33.333); // 3 images on tablet
+      } else {
+        setSlidePercentage(33.333); // 3 images on desktop
+      }
+    };
+
+    updateSlidePercentage();
+    window.addEventListener('resize', updateSlidePercentage);
+    return () => window.removeEventListener('resize', updateSlidePercentage);
+  }, []);
 
   useEffect(() => {
     // Check if we need to jump back to the beginning (after reaching the end of duplicates)
@@ -116,7 +134,7 @@ function GalleryCarousel() {
         transition="all 0.3s"
         onClick={goToPrevious}
         zIndex={10}
-        size="lg"
+        size={{ base: 'md', md: 'lg' }}
       >
         <FaChevronLeft />
       </Button>
@@ -139,7 +157,7 @@ function GalleryCarousel() {
         transition="all 0.3s"
         onClick={goToNext}
         zIndex={10}
-        size="lg"
+        size={{ base: 'md', md: 'lg' }}
       >
         <FaChevronRight />
       </Button>
@@ -147,9 +165,9 @@ function GalleryCarousel() {
       <Box
         ref={carouselRef}
         display="flex"
-        gap={6}
+        gap={{ base: 2, md: 6 }}
         style={{
-          transform: `translateX(-${currentIndex * 33.333}%)`,
+          transform: `translateX(-${currentIndex * slidePercentage}%)`,
           transition: isTransitioning ? 'none' : 'transform 0.6s ease-in-out',
         }}
         w="100%"
@@ -157,8 +175,8 @@ function GalleryCarousel() {
         {[...galleryImages, ...galleryImages, ...galleryImages].map((image, index) => (
           <Box
             key={`${image}-${index}`}
-            flex="0 0 calc(33.333% - 16px)"
-            maxW="calc(33.333% - 16px)"
+            flex={{ base: '0 0 calc(100% - 8px)', md: '0 0 calc(33.333% - 16px)' }}
+            maxW={{ base: 'calc(100% - 8px)', md: 'calc(33.333% - 16px)' }}
             position="relative"
             overflow="hidden"
             borderRadius="xl"
@@ -209,14 +227,14 @@ export default function GallerySection() {
       id="gallery"
       ref={ref}
       minH="100vh"
-      py={20}
+      py={{ base: 12, md: 16, lg: 20 }}
       bg="white"
       position="relative"
       overflow="hidden"
     >
       <GradientBG />
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack gap={12}>
+        <VStack gap={{ base: 8, md: 10, lg: 12 }}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}

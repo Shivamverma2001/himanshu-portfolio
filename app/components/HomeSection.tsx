@@ -5,6 +5,7 @@ import GradientBG from './GradientBG';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { FaArrowDown } from 'react-icons/fa';
+import { useEffect, useRef, useState } from 'react';
 
 // Component to animate text letter by letter with typing effect
 function AnimatedText({ children, delay = 0 }: { children: string; delay?: number }) {
@@ -40,17 +41,64 @@ function AnimatedText({ children, delay = 0 }: { children: string; delay?: numbe
 }
 
 export default function HomeSection() {
+  const imageRef = useRef<HTMLDivElement>(null);
+  const [screenWidth, setScreenWidth] = useState(0);
+
+  useEffect(() => {
+    // Track window/screen width instead of container
+    const updateScreenWidth = () => {
+      const width = window.innerWidth;
+      console.log('Screen width:', width);
+      setScreenWidth(width);
+    };
+
+    // Initial check
+    updateScreenWidth();
+
+    // Listen for resize events
+    window.addEventListener('resize', updateScreenWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateScreenWidth);
+    };
+  }, []);
+
+  // Calculate blur box height based on screen width
+  const getBlurBoxHeight = () => {
+    if (screenWidth === 0) return 40;
+    
+    console.log('Screen width in getBlurBoxHeight:', screenWidth);
+    
+    // Original blur height
+    const originalHeight = 40;
+    
+    // The breakpoint where blur box starts to decrease (corresponds to ~790 image height)
+    const breakpointWidth = 790;
+    
+    // If screen width is less than breakpoint, use original height
+    if (screenWidth <= breakpointWidth) {
+      return originalHeight;
+    }
+    
+    // If screen width is greater than breakpoint, calculate decreasing height
+    const excessWidth = screenWidth - breakpointWidth;
+    const decreasedHeight = Math.max(0, originalHeight - excessWidth * 0.1);
+    console.log('Decreased height in getBlurBoxHeight:', decreasedHeight);
+    
+    return decreasedHeight;
+  };
+
   return (
-    <Box id="home" bg="white" pt={{ base: 0, md: 0 }} pb={{ base: 0, md: 0 }} h={{ base: 'auto', md: '100vh' }} style={{ scrollMarginTop: '96px' }} position="relative" overflow="hidden">
+    <Box id="home" bg="white" pt={{ base: '80px', md: 0 }} pb={{ base: 0, md: 0 }} h={{ base: 'auto', md: '100vh' }} style={{ scrollMarginTop: '96px' }} position="relative" overflow="hidden">
       <GradientBG />
       <Box h="100%" maxW="1920px" mx="auto">
         <Grid templateColumns={{ base: '1fr', md: '55% 45%' }} gap={0} alignItems="stretch" h="100%">
-          <GridItem display="flex" alignItems="center" pl={{ base: 4, md: 8 }} mr={{ base: 0, md: -16 }}>
+          <GridItem display="flex" alignItems="center" pl={{ base: 4, md: 8, lg: 12 }} pr={{ base: 6, md: 0 }} py={{ base: 8, md: 0 }}>
             <VStack align="start" gap={6} w="100%">
-              <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.800" fontFamily="var(--font-poppins)">
+              <Text fontSize={{ base: 'md', md: 'xl', xl: '2xl' }} color="gray.800" fontFamily="var(--font-poppins)">
                 <AnimatedText delay={2}>Actor | Creator | Brand Storyteller</AnimatedText>
               </Text>
-              <Heading as="h1" fontWeight="extrabold" lineHeight="1.05" fontFamily="var(--font-playfair)" fontSize={{ base: '3xl', md: '5xl', lg: '6xl' }}>
+              <Heading as="h1" fontWeight="extrabold" lineHeight="1.05" fontFamily="var(--font-playfair)" fontSize={{ base: '2xl', md: '4xl', lg: '5xl', xl: '6xl' }}>
                 <AnimatedText delay={2.5}>Transform Your</AnimatedText>
                 <br />
                 <Box as="span">
@@ -59,17 +107,17 @@ export default function HomeSection() {
                 <br />
                 <AnimatedText delay={3.3}>With Cinematic Creativity</AnimatedText>
               </Heading>
-              <Text fontSize={{ base: 'md', md: 'lg' }} color="gray.700" fontStyle="italic" fontFamily="var(--font-poppins)">
+              <Text fontSize={{ base: 'sm', md: 'lg', xl: 'xl' }} color="gray.700" fontStyle="italic" fontFamily="var(--font-poppins)">
                 <AnimatedText delay={4}>"I don't just create content — I create connections."</AnimatedText>
               </Text>
-              <Text color="gray.700" fontSize={{ base: 'md', md: 'lg' }} maxW="600px" fontFamily="var(--font-poppins)">
+              <Text color="gray.700" fontSize={{ base: 'sm', md: 'lg', xl: 'xl' }} maxW="600px" fontFamily="var(--font-poppins)">
                 <AnimatedText delay={4.5}>Work with a versatile actor and creator to bring authentic, brand - aligned narratives to life — from short-form content to commercials.</AnimatedText>
               </Text>
               <Box w="100%" display="flex" flexDirection="column" alignItems="center">
-                <HStack gap={4}>
+                <HStack gap={{ base: 2, md: 4 }} flexWrap="wrap" justifyContent="center">
                   <Button 
                     colorScheme="blue" 
-                    size="lg"
+                    size={{ base: 'md', md: 'lg' }}
                     onClick={() => {
                       const element = document.querySelector('#portfolio');
                       if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -81,7 +129,7 @@ export default function HomeSection() {
                   <Button 
                     variant="outline" 
                     colorScheme="blue" 
-                    size="lg"
+                    size={{ base: 'md', md: 'lg' }}
                     onClick={() => {
                       const element = document.querySelector('#contact');
                       if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -129,7 +177,7 @@ export default function HomeSection() {
           <GridItem display="flex" alignItems="stretch">
             <Box w="100%" h={{ base: '480px', md: '100%' }} display="flex" alignItems="center" justifyContent="center">
               <Box position="relative" w="100%" h="100%" bg="transparent" borderRadius={0} boxShadow="none" p={0}>
-                <Box position="relative" w="100%" h="100%" borderRadius={0}>
+                <Box ref={imageRef} position="relative" w="100%" h="100%" borderRadius={0}>
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -137,29 +185,31 @@ export default function HomeSection() {
                     style={{ width: '100%', height: '100%', position: 'relative' }}
                   >
                     <Image
-                      src="/myimages/image.png"
+                      src="/coverimage/image.png"
                       alt="Himanshu portrait"
                       fill
                       priority
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      style={{ objectFit: 'contain', objectPosition: 'right center' }}
+                      style={{ objectFit: 'contain', objectPosition: 'center' }}
                     />
                   </motion.div>
-                  {/* Permanent bottom blur effect */}
-                  <Box
-                    position="absolute"
-                    bottom={0}
-                    left={0}
-                    right={0}
-                    h="40px"
-                    bgGradient="linear(to-t, white, transparent)"
-                    pointerEvents="none"
-                    zIndex={2}
-                    style={{ 
-                      backdropFilter: 'blur(10px)',
-                      WebkitBackdropFilter: 'blur(10px)'
-                    }}
-                  />
+                  {/* Dynamic bottom blur effect positioned at image bottom */}
+                  {screenWidth > 0 && (
+                    <Box
+                      position="absolute"
+                      bottom={0}
+                      left={0}
+                      right={0}
+                      h={`${getBlurBoxHeight()}px`}
+                      bgGradient="linear(to-t, white, transparent)"
+                      pointerEvents="none"
+                      zIndex={2}
+                      style={{ 
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)'
+                      }}
+                    />
+                  )}
                 </Box>
               </Box>
             </Box>

@@ -76,7 +76,7 @@ function AnimatedMask() {
       </mesh>
       {/* Smile */}
       <mesh position={[0, -0.2, 0.65]} rotation={[Math.PI / 6, -0.3, 0]}>
-        <torusGeometry args={[0.2, 0.05, 8, 16, 0, Math.PI]} />
+        <torusGeometry args={[0.2, 0.05, 8, 16, Math.PI]} />
         <meshStandardMaterial color="#1E40AF" />
       </mesh>
     </group>
@@ -157,7 +157,6 @@ export default function HeroSection() {
       overflow="hidden"
       bgGradient="linear(to-b, white, blue.50)"
       color="gray.800"
-      position="relative"
     >
       {/* 3D Background */}
       <Box
@@ -255,14 +254,13 @@ export default function HeroSection() {
                   <Button
                     colorScheme="blue"
                     size="lg"
-                    rightIcon={<FaPlay />}
                     onClick={scrollToAbout}
                     bgGradient="linear(to-r, blue.600, blue.500)"
                     color="white"
                     _hover={{ bgGradient: 'linear(to-r, blue.700, blue.600)' }}
                     fontFamily="var(--font-poppins)"
                   >
-                    Explore My Journey
+                    Explore My Journey <FaPlay style={{ marginLeft: '8px' }} />
                   </Button>
                 </motion.div>
                 <motion.div

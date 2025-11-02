@@ -38,6 +38,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${poppins.variable} ${playfair.variable} antialiased`}
+        suppressHydrationWarning
       >
         {/* Server-rendered placeholder overlay so content is hidden before client mounts */}
         <div

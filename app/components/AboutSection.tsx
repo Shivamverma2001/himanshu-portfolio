@@ -162,7 +162,7 @@ export default function AboutSection() {
       id="about"
       ref={ref}
       minH="100vh"
-      py={20}
+      py={{ base: 12, md: 16, lg: 20 }}
       bg="white"
       position="relative"
       overflow="hidden"
@@ -184,7 +184,7 @@ export default function AboutSection() {
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack gap={12}>
+        <VStack gap={{ base: 8, md: 10, lg: 12 }}>
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             style={{ opacity, y }}
@@ -204,6 +204,7 @@ export default function AboutSection() {
               color="gray.700"
               textAlign="center"
               mt={4}
+              mb={{ base: 8, md: 12 }}
               maxW="800px"
               fontFamily="var(--font-poppins)"
               fontWeight="bold"
@@ -213,8 +214,9 @@ export default function AboutSection() {
           </motion.div>
 
           <Grid
-            templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }}
-            gap={6}
+            templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }}
+            gap={{ base: 3, md: 6 }}
+            rowGap={{ base: 3, md: 6 }}
             w="100%"
           >
             {stats.map((stat, index) => (
@@ -230,7 +232,7 @@ export default function AboutSection() {
                   transition={{ duration: 0.2 }}
                 >
                   <Box
-                    p={6}
+                    p={{ base: 3, md: 6 }}
                     bg="white"
                     borderRadius="xl"
                     borderWidth="2px"
@@ -244,15 +246,20 @@ export default function AboutSection() {
                     transition="all 0.3s"
                     h="100%"
                   >
-                    <HStack gap={4} align="center" h="100%">
+                    <HStack gap={{ base: 2, md: 4 }} align="center" h="100%">
                       <Box flexShrink={0}>
-                        <stat.icon size={40} color="#3B82F6" />
-                        <Text color="gray.600" fontSize="sm" fontWeight="medium" fontFamily="var(--font-poppins)" mt={2}>
+                        <Box display={{ base: 'none', md: 'block' }}>
+                          <stat.icon size={40} color="#3B82F6" />
+                        </Box>
+                        <Box display={{ base: 'block', md: 'none' }}>
+                          <stat.icon size={24} color="#3B82F6" />
+                        </Box>
+                        <Text color="gray.600" fontSize={{ base: 'xs', md: 'sm', lg: 'md' }} fontWeight="medium" fontFamily="var(--font-poppins)" mt={2}>
                           {stat.label}
                         </Text>
                       </Box>
                       <Box flex={1} textAlign="center">
-                        <Text color="blue.600" fontSize={{ base: 'xl', md: '2xl' }} fontWeight="bold" fontFamily="var(--font-poppins)">
+                        <Text color="blue.600" fontSize={{ base: 'sm', md: 'xl', lg: '2xl' }} fontWeight="bold" fontFamily="var(--font-poppins)">
                           {stat.value}
                         </Text>
                       </Box>
@@ -272,14 +279,14 @@ export default function AboutSection() {
               style={{ width: '100%' }}
             >
               <Box
-                p={8}
+                p={{ base: 4, md: 8 }}
                 bg="gray.50"
                 borderRadius="xl"
                 borderLeftWidth="4px"
                 borderLeftColor="blue.500"
                 boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
               >
-                <Text fontSize="lg" color="gray.700" lineHeight="tall">
+                <Text fontSize={{ base: 'sm', md: 'md', lg: 'lg' }} color="gray.700" lineHeight="tall">
                   From the bustling streets of <strong>Delhi and Mumbai</strong> to the serene lanes of{' '}
                   <strong>Yamunanagar, Haryana</strong>, I bring stories to life through authentic performance 
                   and cinematic creativity.
@@ -295,18 +302,18 @@ export default function AboutSection() {
               style={{ width: '100%' }}
             >
               <Box
-                p={8}
+                p={{ base: 4, md: 8 }}
                 bg="gray.50"
                 borderRadius="xl"
                 borderLeftWidth="4px"
                 borderLeftColor="blue.500"
                 boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
               >
-                <Text fontSize="lg" color="gray.800" lineHeight="tall" mb={4} fontFamily="var(--font-poppins)">
+                <Text fontSize={{ base: 'sm', md: 'md', lg: 'lg' }} color="gray.800" lineHeight="tall" mb={4} fontFamily="var(--font-poppins)">
                   <strong>Started Acting In: 2021</strong> – driven by my dream to make people smile and 
                   connect emotionally through performance.
                 </Text>
-                <Text fontSize="lg" color="gray.800" lineHeight="tall" fontFamily="var(--font-poppins)">
+                <Text fontSize={{ base: 'sm', md: 'md', lg: 'lg' }} color="gray.800" lineHeight="tall" fontFamily="var(--font-poppins)">
                   Trained in <strong>theatre and stage acting</strong>, now transitioning into on-screen work 
                   and brand commercials.
                 </Text>
@@ -321,14 +328,14 @@ export default function AboutSection() {
               style={{ width: '100%' }}
             >
               <Box
-                p={8}
+                p={{ base: 4, md: 8 }}
                 bg="gray.50"
                 borderRadius="xl"
                 borderLeftWidth="4px"
                 borderLeftColor="blue.500"
                 boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
               >
-                <Text fontSize="lg" color="gray.800" lineHeight="tall" fontFamily="var(--font-poppins)">
+                <Text fontSize={{ base: 'sm', md: 'md', lg: 'lg' }} color="gray.800" lineHeight="tall" fontFamily="var(--font-poppins)">
                   <strong>Goal:</strong> To become one of India's most recognized on-screen actors while 
                   continuing to collaborate with local and national brands to tell meaningful stories.
                 </Text>

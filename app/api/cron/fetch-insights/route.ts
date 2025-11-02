@@ -1,21 +1,18 @@
 import { NextResponse } from 'next/server';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-// ============================================================================
-// REAL API INTEGRATIONS FOR SOCIAL MEDIA ANALYTICS
-// ============================================================================
-
-// YouTube Data API v3 - Fetch Channel Statistics
+// Import the API functions from insights route
 async function fetchYouTubeData() {
   try {
     const apiKey = process.env.YOUTUBE_API_KEY;
-    const channelId = process.env.YOUTUBE_CHANNEL_ID; // e.g., 'UC...' or '@himverma_01'
+    const channelId = process.env.YOUTUBE_CHANNEL_ID;
     
     if (!apiKey || !channelId) {
       console.log('YouTube: Missing API credentials');
       return null;
     }
     
-    // First, get the channel ID if username was provided
     let actualChannelId = channelId;
     if (channelId.startsWith('@')) {
       const channelResponse = await fetch(
@@ -27,7 +24,6 @@ async function fetchYouTubeData() {
       }
     }
     
-    // Get channel statistics
     const response = await fetch(
       `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${actualChannelId}&key=${apiKey}`
     );
@@ -40,7 +36,7 @@ async function fetchYouTubeData() {
       
       return {
         views: `${(views / 1000).toFixed(1)}K`,
-        watchTime: `${(views * 0.25 / 1000).toFixed(1)}K hours`, // Estimated
+        watchTime: `${(views * 0.25 / 1000).toFixed(1)}K hours`,
         subscribers: `+${subscribers}`,
         growth: `${((views / 1000) * 0.3).toFixed(1)}K more than usual`,
       };
@@ -51,7 +47,6 @@ async function fetchYouTubeData() {
   return null;
 }
 
-// Instagram Graph API - Fetch Business Account Insights
 async function fetchInstagramData() {
   try {
     const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
@@ -62,7 +57,6 @@ async function fetchInstagramData() {
       return null;
     }
     
-    // Get Instagram business account insights
     const response = await fetch(
       `https://graph.facebook.com/v18.0/${accountId}/insights?metric=impressions,reach,profile_views&period=day&access_token=${accessToken}`
     );
@@ -91,7 +85,6 @@ async function fetchInstagramData() {
   return null;
 }
 
-// Facebook Graph API - Fetch Page Insights
 async function fetchFacebookData() {
   try {
     const pageToken = process.env.FACEBOOK_PAGE_TOKEN;
@@ -102,7 +95,6 @@ async function fetchFacebookData() {
       return null;
     }
     
-    // Get Facebook page insights
     const response = await fetch(
       `https://graph.facebook.com/v18.0/${pageId}/insights?metric=page_views,page_reach,page_engaged_users&period=day&access_token=${pageToken}`
     );
@@ -130,14 +122,6 @@ async function fetchFacebookData() {
   return null;
 }
 
-// Snapchat - Limited API access, using fallback
-async function fetchSnapchatData() {
-  // Snapchat doesn't provide public creator analytics APIs
-  // Would need Snapchat Ads API which is restricted to advertisers
-  return null;
-}
-
-// Fallback data generator with random variation
 function generateFallbackData() {
   const randomVariance = 0.05;
   const getRandom = () => 1 + (Math.random() - 0.5) * randomVariance;
@@ -237,34 +221,22 @@ function generateFallbackData() {
   };
 }
 
-export async function GET() {
+// This endpoint runs daily at 10 AM IST via Vercel Cron
+export async function GET(request: Request) {
   try {
-    // Try to read cached data first
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const dataPath = path.join(process.cwd(), 'data', 'insights.json');
+    // Verify this is a cron request (Vercel adds this header)
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
     
-    try {
-      const cachedData = await fs.readFile(dataPath, 'utf-8');
-      const insights = JSON.parse(cachedData);
-      
-      console.log('✅ Served cached insights data');
-      return NextResponse.json(insights, {
-        headers: {
-          'Cache-Control': 'public, s-maxage=3600, max-age=3600', // Cache for 1 hour
-        },
-      });
-    } catch (fileError) {
-      console.log('📂 No cached data found, generating fresh data...');
-      // Continue to generate fresh data if cache doesn't exist
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // If no cache exists, fetch fresh data (this should rarely happen)
-    const [youtubeData, instagramData, facebookData, snapchatData] = await Promise.all([
+    // Fetch fresh data from APIs
+    const [youtubeData, instagramData, facebookData] = await Promise.all([
       fetchYouTubeData(),
       fetchInstagramData(),
       fetchFacebookData(),
-      fetchSnapchatData(),
     ]);
     
     // Start with fallback data
@@ -288,37 +260,35 @@ export async function GET() {
         },
         snapchat: {
           ...fallbackData.platforms.snapchat,
-          metrics: snapchatData || fallbackData.platforms.snapchat.metrics,
+          metrics: fallbackData.platforms.snapchat.metrics,
         },
       },
     };
     
-    // Cache this data for future requests
-    try {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      const dataDir = path.join(process.cwd(), 'data');
-      await fs.mkdir(dataDir, { recursive: true });
-      const filePath = path.join(dataDir, 'insights.json');
-      await fs.writeFile(filePath, JSON.stringify(insights, null, 2));
-    } catch (cacheError) {
-      console.log('⚠️  Could not cache data:', cacheError);
-    }
+    // Save to file for the main API to read
+    const dataDir = path.join(process.cwd(), 'data');
+    await fs.mkdir(dataDir, { recursive: true });
+    const filePath = path.join(dataDir, 'insights.json');
+    await fs.writeFile(filePath, JSON.stringify(insights, null, 2));
     
-    return NextResponse.json(insights, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=3600, max-age=3600',
-      },
+    console.log('✅ Insights data cached successfully at:', new Date().toISOString());
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Insights data cached successfully',
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error generating insights:', error);
-    // Return fallback data on error
-    const fallbackData = generateFallbackData();
-    return NextResponse.json(fallbackData, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=1800',
-      },
-    });
+    console.error('❌ Error caching insights:', error);
+    return NextResponse.json({ 
+      error: 'Failed to cache insights data',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
+}
+
+// Also support POST for manual triggers
+export async function POST(request: Request) {
+  return GET(request);
 }
 
