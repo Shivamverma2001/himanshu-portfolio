@@ -67,7 +67,8 @@ const portfolioGroups = [
       description: 'Theatrical monologue showcase',
       type: 'video',
       thumbnail: '/api/placeholder/400/300',
-      videoUrl: '/myimages/Audition_video.MOV',
+      videoUrl: 'https://www.instagram.com/reel/DQHbkqoARgg/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==',
+      platform: 'instagram',
     },
   ],
   [
