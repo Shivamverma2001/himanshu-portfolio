@@ -73,8 +73,8 @@ export default function Navigation() {
         >
           <Box
             position="relative"
-            w={{ base: '50px', md: '60px', lg: '60px' }}
-            h={{ base: '50px', md: '60px', lg: '60px' }}
+            w={{ base: '40px', md: '50px', lg: '50px' }}
+            h={{ base: '40px', md: '50px', lg: '50px' }}
           >
             <Image
               src="/logo/image.png"
