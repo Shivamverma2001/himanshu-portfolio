@@ -188,12 +188,13 @@ function AnimatedStar() {
 }
 
 // Certificates Section 3D - Trophy, Certificate & Star Award
-function CertificatesScene3D() {
+function CertificatesScene3D({ isVisible }: { isVisible: boolean }) {
   return (
     <Canvas 
       camera={{ position: [0, 0, 5], fov: 50 }}
       gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent' }}
+      frameloop={isVisible ? 'always' : 'demand'}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.5} />
@@ -203,7 +204,7 @@ function CertificatesScene3D() {
           <AnimatedCertificate />
           <AnimatedStar />
         </Center>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.25} />
+        <OrbitControls enableZoom={false} autoRotate={isVisible} autoRotateSpeed={0.25} />
       </Suspense>
     </Canvas>
   );
@@ -213,9 +214,27 @@ export default function CertificatesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const carouselRef1 = useRef<HTMLDivElement>(null);
   const carouselRef2 = useRef<HTMLDivElement>(null);
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
   
   // State for certificates carousel
   const [currentIndex1, setCurrentIndex1] = useState(certificates.length);
+
+  // Monitor section visibility to pause 3D animation when not visible
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsSectionVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
   const [isTransitioning1, setIsTransitioning1] = useState(false);
   const [slidePercentage1, setSlidePercentage1] = useState(100);
   const [itemWidth1, setItemWidth1] = useState('calc(100% - 24px)');
@@ -355,7 +374,7 @@ export default function CertificatesSection() {
         pointerEvents="none"
       >
         <Box w="100%" h="100%" style={{ background: 'transparent' }}>
-          <CertificatesScene3D />
+          <CertificatesScene3D isVisible={isSectionVisible} />
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>

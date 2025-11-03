@@ -66,10 +66,10 @@ const collaborations = [
     color: 'yellow',
   },
   {
-    brand: 'Gera Electronics',
-    description: 'Festive Sale Campaigns',
-    icon: FaMobileAlt,
-    category: 'Electronics',
+    brand: 'Nasir Hussain',
+    description: 'Beauty & Fashion Brand Promotions',
+    icon: FaShoppingBag,
+    category: 'Beauty & Fashion',
     color: 'yellow',
   },
 ];
@@ -80,12 +80,13 @@ const categories = [
 ];
 
 // Experience Section 3D - Brand collaboration elements
-function ExperienceScene3D() {
+function ExperienceScene3D({ isVisible }: { isVisible: boolean }) {
   return (
     <Canvas 
       camera={{ position: [0, 0, 5], fov: 50 }}
       gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent' }}
+      frameloop={isVisible ? 'always' : 'demand'}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.5} />
@@ -117,7 +118,7 @@ function ExperienceScene3D() {
             <meshStandardMaterial color="#60A5FA" transparent opacity={0.5} />
           </mesh>
         </Center>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.3} />
+        <OrbitControls enableZoom={false} autoRotate={isVisible} autoRotateSpeed={0.3} />
       </Suspense>
     </Canvas>
   );
@@ -130,6 +131,27 @@ export default function ExperienceSection() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [slidePercentage, setSlidePercentage] = useState(100);
   const [isCarousel, setIsCarousel] = useState(true);
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
+
+  // Monitor section visibility to pause 3D animation when not visible
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsSectionVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Track visible items count
+  const [itemsVisible, setItemsVisible] = useState(1);
 
   // Track if we should show carousel or grid
   useEffect(() => {
@@ -138,8 +160,10 @@ export default function ExperienceSection() {
       setIsCarousel(width < 768);
       if (width < 768) {
         setSlidePercentage(100);
+        setItemsVisible(1);
       } else {
         setSlidePercentage(50);
+        setItemsVisible(2); // 2 items visible on desktop
       }
     };
 
@@ -148,9 +172,14 @@ export default function ExperienceSection() {
     return () => window.removeEventListener('resize', updateLayout);
   }, []);
 
+  // Calculate duplicates needed based on visible items
+  const duplicatesNeeded = Math.max(3, Math.ceil(itemsVisible * 2));
+  const duplicatedCollaborations = Array(duplicatesNeeded).fill(collaborations).flat();
+
   // Carousel navigation
   useEffect(() => {
-    if (currentIndex >= collaborations.length * 2) {
+    const maxIndex = duplicatedCollaborations.length - itemsVisible;
+    if (currentIndex >= maxIndex) {
       setIsTransitioning(true);
       setTimeout(() => {
         setCurrentIndex(collaborations.length);
@@ -164,7 +193,7 @@ export default function ExperienceSection() {
         setIsTransitioning(false);
       }, 50);
     }
-  }, [currentIndex]);
+  }, [currentIndex, collaborations.length, itemsVisible, duplicatedCollaborations.length]);
 
   // Auto-scroll for carousel only
   useEffect(() => {
@@ -208,7 +237,7 @@ export default function ExperienceSection() {
         pointerEvents="none"
       >
         <Box w="100%" h="100%" style={{ background: 'transparent' }}>
-          <ExperienceScene3D />
+          <ExperienceScene3D isVisible={isSectionVisible} />
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>
@@ -303,8 +332,10 @@ export default function ExperienceSection() {
                   transition: isTransitioning ? 'none' : 'transform 0.5s ease-in-out',
                 }}
                 w="100%"
+                minW="100%"
+                flexShrink={0}
               >
-                {[...collaborations, ...collaborations, ...collaborations].map((collab, index) => (
+                {duplicatedCollaborations.map((collab, index) => (
                   <Box
                     key={`${collab.brand}-${index}`}
                     flex={{ base: '0 0 calc(100% - 24px)' }}

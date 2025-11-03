@@ -136,10 +136,25 @@ export default function CurtainReveal() {
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
-    // Safety timeout in case onDone is not triggered
-    const id = setTimeout(() => setVisible(false), 2500);
-    return () => clearTimeout(id);
-  }, []);
+    // Safety timeout in case onDone is not triggered or Three.js fails to initialize
+    // Increased timeout to handle slower devices
+    const id = setTimeout(() => {
+      if (visible) {
+        setFading(true);
+        setTimeout(() => setVisible(false), 400);
+      }
+    }, 3000);
+    
+    // Additional fallback timeout for extreme cases (10 seconds max)
+    const fallbackId = setTimeout(() => {
+      setVisible(false);
+    }, 10000);
+    
+    return () => {
+      clearTimeout(id);
+      clearTimeout(fallbackId);
+    };
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -158,6 +173,11 @@ export default function CurtainReveal() {
       <Canvas
         gl={{ alpha: true, antialias: true }}
         style={{ background: 'transparent' }}
+        onCreated={() => {
+          // Remove pre-curtain when canvas is ready
+          const el = document.getElementById('pre-curtain');
+          if (el) el.remove();
+        }}
       >
         {/* Orthographic camera to make planes fill the screen consistently */}
         <OrthographicCamera makeDefault position={[0, 0, 5]} zoom={200} />

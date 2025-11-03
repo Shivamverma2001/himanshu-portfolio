@@ -7,7 +7,7 @@ import { FaUser, FaBirthdayCake, FaRulerVertical, FaLanguage, FaMapMarkerAlt, Fa
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { Suspense } from 'react';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 
 // Component to animate text letter by letter with typing effect
@@ -127,12 +127,13 @@ function AnimatedStage() {
 }
 
 // About Section 3D - Airplane (Journey) & Theater Stage
-function AboutScene3D() {
+function AboutScene3D({ isVisible }: { isVisible: boolean }) {
   return (
     <Canvas 
       camera={{ position: [0, 0, 5], fov: 50 }}
       gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent' }}
+      frameloop={isVisible ? 'always' : 'demand'}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.6} />
@@ -141,7 +142,7 @@ function AboutScene3D() {
           <AnimatedAirplane />
           <AnimatedStage />
         </Center>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.2} />
+        <OrbitControls enableZoom={false} autoRotate={isVisible} autoRotateSpeed={0.2} />
       </Suspense>
     </Canvas>
   );
@@ -149,6 +150,7 @@ function AboutScene3D() {
 
 export default function AboutSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
@@ -156,6 +158,23 @@ export default function AboutSection() {
 
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
   const y = useTransform(scrollYProgress, [0, 0.5, 1], [100, 0, -100]);
+
+  // Monitor section visibility to pause 3D animation when not visible
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsSectionVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <Box
@@ -180,7 +199,7 @@ export default function AboutSection() {
         pointerEvents="none"
       >
         <Box w="100%" h="100%" style={{ background: 'transparent' }}>
-          <AboutScene3D />
+          <AboutScene3D isVisible={isSectionVisible} />
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>

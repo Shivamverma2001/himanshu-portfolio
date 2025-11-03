@@ -208,12 +208,13 @@ function AnimatedPen() {
 }
 
 // Skills Section 3D - Video Camera, Microphone & Pen (Acting, Production, Creative)
-function SkillsScene3D() {
+function SkillsScene3D({ isVisible }: { isVisible: boolean }) {
   return (
     <Canvas 
       camera={{ position: [0, 0, 5], fov: 50 }}
       gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent' }}
+      frameloop={isVisible ? 'always' : 'demand'}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.5} />
@@ -223,7 +224,7 @@ function SkillsScene3D() {
           <AnimatedMicrophone />
           <AnimatedPen />
         </Center>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.3} />
+        <OrbitControls enableZoom={false} autoRotate={isVisible} autoRotateSpeed={0.3} />
       </Suspense>
     </Canvas>
   );
@@ -231,7 +232,25 @@ function SkillsScene3D() {
 
 export default function SkillsSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
   const [shuffledSkills, setShuffledSkills] = useState(skills);
+
+  // Monitor section visibility to pause 3D animation when not visible
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsSectionVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
   const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
@@ -281,7 +300,7 @@ export default function SkillsSection() {
         pointerEvents="none"
       >
         <Box w="100%" h="100%" style={{ background: 'transparent' }}>
-          <SkillsScene3D />
+          <SkillsScene3D isVisible={isSectionVisible} />
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>

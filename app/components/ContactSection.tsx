@@ -29,7 +29,7 @@ import {
 } from 'react-icons/fa';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 
 // Component to animate text letter by letter with typing effect
@@ -240,12 +240,13 @@ function AnimatedChatBubble() {
 }
 
 // Contact Section 3D - Phone (Calling), Envelope (Email) & Chat Bubble (Messaging)
-function ContactScene3D() {
+function ContactScene3D({ isVisible }: { isVisible: boolean }) {
   return (
     <Canvas 
       camera={{ position: [0, 0, 5], fov: 50 }}
       gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent' }}
+      frameloop={isVisible ? 'always' : 'demand'}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.5} />
@@ -255,7 +256,7 @@ function ContactScene3D() {
           <AnimatedEnvelope />
           <AnimatedChatBubble />
         </Center>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.3} />
+        <OrbitControls enableZoom={false} autoRotate={isVisible} autoRotateSpeed={0.3} />
       </Suspense>
     </Canvas>
   );
@@ -263,6 +264,7 @@ function ContactScene3D() {
 
 export default function ContactSection() {
   const ref = useRef<HTMLDivElement>(null);
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
   const toaster = createToaster({ placement: 'top' });
   const [formData, setFormData] = useState({
     name: '',
@@ -271,6 +273,23 @@ export default function ContactSection() {
     message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Monitor section visibility to pause 3D animation when not visible
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsSectionVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,7 +362,7 @@ export default function ContactSection() {
         pointerEvents="none"
       >
         <Box w="100%" h="100%" style={{ background: 'transparent' }}>
-          <ContactScene3D />
+          <ContactScene3D isVisible={isSectionVisible} />
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>

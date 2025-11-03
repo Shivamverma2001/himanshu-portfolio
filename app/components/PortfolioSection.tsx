@@ -8,7 +8,6 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { useMusicStore } from './BackgroundMusic';
 
 // Component to animate text letter by letter with typing effect
 function AnimatedSubtitle({ children, delay = 0 }: { children: string; delay?: number }) {
@@ -226,12 +225,13 @@ function AnimatedPlayButton() {
 }
 
 // Portfolio Section 3D - Video Camera, Film Strip & Play Button
-function PortfolioScene3D() {
+function PortfolioScene3D({ isVisible }: { isVisible: boolean }) {
   return (
     <Canvas 
       camera={{ position: [0, 0, 5], fov: 50 }}
       gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent' }}
+      frameloop={isVisible ? 'always' : 'demand'}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.5} />
@@ -241,7 +241,7 @@ function PortfolioScene3D() {
           <AnimatedFilmStrip />
           <AnimatedPlayButton />
         </Center>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={0.3} />
+        <OrbitControls enableZoom={false} autoRotate={isVisible} autoRotateSpeed={0.3} />
       </Suspense>
     </Canvas>
   );
@@ -302,30 +302,35 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [slidePercentage, setSlidePercentage] = useState(33.333);
   const [itemWidth, setItemWidth] = useState('calc(100% - 16px)');
+  const [itemsVisible, setItemsVisible] = useState(3); // Track how many items are visible
   
   useEffect(() => {
     const updateSlidePercentage = () => {
       const width = window.innerWidth;
+      let visible: number;
       if (width < 560) {
         setSlidePercentage(100); // 1 item on mobile
         setItemWidth('calc(100% - 16px)');
+        visible = 1;
       } else if (width < 800) {
         // Gradual transition from 1.2 to 2 items
         // At 560: 1.2 items (83.33%), at 800: 2 items (50%)
         const progress = (width - 560) / (800 - 560); // 0 to 1
-        const itemsVisible = 1.2 + progress * 0.8; // 1.2 to 2
-        setSlidePercentage(100 / itemsVisible);
-        setItemWidth(`calc(${100 / itemsVisible}% - 16px)`);
+        visible = 1.2 + progress * 0.8; // 1.2 to 2
+        setSlidePercentage(100 / visible);
+        setItemWidth(`calc(${100 / visible}% - 16px)`);
       } else if (width < 1024) {
         // Gradual transition from 2 to 3 items
         const progress = (width - 800) / (1024 - 800); // 0 to 1
-        const itemsVisible = 2 + progress * 1; // 2 to 3
-        setSlidePercentage(100 / itemsVisible);
-        setItemWidth(`calc(${100 / itemsVisible}% - 16px)`);
+        visible = 2 + progress * 1; // 2 to 3
+        setSlidePercentage(100 / visible);
+        setItemWidth(`calc(${100 / visible}% - 16px)`);
       } else {
         setSlidePercentage(33.333); // 3 items on desktop
         setItemWidth('calc(33.333% - 21.33px)');
+        visible = 3;
       }
+      setItemsVisible(Math.ceil(visible)); // Round up to ensure we have enough
     };
     
     updateSlidePercentage();
@@ -384,9 +389,14 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
     return url;
   };
 
+  // Calculate how many duplicates we need based on visible items
+  const duplicatesNeeded = Math.max(3, Math.ceil(itemsVisible * 2)); // At least 3x, or 2x visible items
+  const duplicatedItems = Array(duplicatesNeeded).fill(items).flat();
+
   useEffect(() => {
-    // Check if we need to jump back to the beginning (after reaching the end of duplicates)
-    if (currentIndex >= items.length * 2) {
+    // Check if we need to jump back to the beginning (after reaching the end)
+    const maxIndex = duplicatedItems.length - itemsVisible;
+    if (currentIndex >= maxIndex) {
       setIsTransitioning(true);
       setTimeout(() => {
         setCurrentIndex(items.length);
@@ -401,7 +411,7 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
         setIsTransitioning(false);
       }, 50);
     }
-  }, [currentIndex, items.length]);
+  }, [currentIndex, items.length, itemsVisible, duplicatedItems.length]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -425,6 +435,7 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
       overflow="hidden"
       position="relative"
       py={1}
+      style={{ minWidth: 0 }} // Prevent overflow issues
     >
       {/* Left Arrow */}
       <Button
@@ -481,8 +492,10 @@ function PortfolioCarousel({ items, onVideoClick }: { items: any[], onVideoClick
           transition: isTransitioning ? 'none' : 'transform 0.5s ease-in-out',
         }}
         w="100%"
+        minW="100%"
+        flexShrink={0}
       >
-        {[...items, ...items, ...items].map((item, index) => (
+        {duplicatedItems.map((item, index) => (
           <Box
             key={`${item.title}-${index}`}
             flex={`0 0 ${itemWidth}`}
@@ -563,29 +576,40 @@ function ShortsCarousel({ videos, onVideoClick }: { videos: string[], onVideoCli
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [slidePercentage, setSlidePercentage] = useState(20);
   const [itemWidth, setItemWidth] = useState('calc(66.667% - 8px)');
+  const [itemsVisible, setItemsVisible] = useState(5); // Track how many items are visible
+  const [loadedItems, setLoadedItems] = useState<Set<number>>(new Set());
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   
   useEffect(() => {
     const updateSlidePercentage = () => {
       const width = window.innerWidth;
+      let visible: number;
       if (width < 395) {
         setSlidePercentage(100); // 1 item visible on small mobile
         setItemWidth('calc(100% - 8px)');
+        visible = 1;
       } else if (width < 497) {
         setSlidePercentage(66.667); // 1.5 items visible on larger mobile
         setItemWidth('calc(66.667% - 8px)');
+        visible = 1.5;
       } else if (width < 620) {
         setSlidePercentage(50); // 2 items visible
         setItemWidth('calc(50% - 8px)');
+        visible = 2;
       } else if (width < 768) {
         setSlidePercentage(33.333); // 3 items visible
         setItemWidth('calc(33.333% - 8px)');
+        visible = 3;
       } else if (width < 1024) {
         setSlidePercentage(25); // 4 items visible on tablet
         setItemWidth('calc(25% - 8px)');
+        visible = 4;
       } else {
         setSlidePercentage(20); // 5 items visible on desktop
         setItemWidth('calc(20% - 16px)');
+        visible = 5;
       }
+      setItemsVisible(Math.ceil(visible)); // Round up to ensure we have enough
     };
     
     updateSlidePercentage();
@@ -617,9 +641,14 @@ function ShortsCarousel({ videos, onVideoClick }: { videos: string[], onVideoCli
     return url;
   };
 
+  // Calculate duplicates needed based on visible items
+  const duplicatesNeeded = Math.max(3, Math.ceil(itemsVisible * 2));
+  const duplicatedVideos = Array(duplicatesNeeded).fill(videos).flat();
+
   useEffect(() => {
-    // Check if we need to jump back to the beginning (after reaching the end of duplicates)
-    if (currentIndex >= videos.length * 2) {
+    // Check if we need to jump back to the beginning (after reaching the end)
+    const maxIndex = duplicatedVideos.length - itemsVisible;
+    if (currentIndex >= maxIndex) {
       setIsTransitioning(true);
       setTimeout(() => {
         setCurrentIndex(videos.length);
@@ -634,7 +663,114 @@ function ShortsCarousel({ videos, onVideoClick }: { videos: string[], onVideoCli
         setIsTransitioning(false);
       }, 50);
     }
-  }, [currentIndex, videos.length]);
+  }, [currentIndex, videos.length, itemsVisible, duplicatedVideos.length]);
+
+  // Load initial visible items immediately (fix preview issue)
+  useEffect(() => {
+    // Wait a bit for duplicatedVideos to be ready
+    const timer = setTimeout(() => {
+      // Calculate visible items from slidePercentage
+      const slidePercent = typeof slidePercentage === 'number' ? slidePercentage : parseFloat(String(slidePercentage).replace('%', ''));
+      const calculatedVisible = Math.ceil(100 / slidePercent);
+      
+      // Load much more items - at least 5x visible items to ensure all visible items load
+      const initialVisible = Math.max(calculatedVisible * 5, 15); // Always load at least 5x visible items
+      
+      const indicesToLoad: number[] = [];
+      // Load items from the middle (where carousel starts) - account for duplicated videos
+      const startIndex = videos.length;
+      const maxIndex = duplicatedVideos.length > 0 ? duplicatedVideos.length : videos.length * 3;
+      
+      // Load main visible items plus very large buffer on both sides (3x visible on each side)
+      const buffer = calculatedVisible * 3;
+      for (let i = Math.max(0, startIndex - buffer); i < startIndex + initialVisible && i < maxIndex; i++) {
+        indicesToLoad.push(i);
+      }
+      
+      if (indicesToLoad.length > 0) {
+        setLoadedItems((prev) => {
+          const newSet = new Set(prev);
+          indicesToLoad.forEach(idx => newSet.add(idx));
+          return newSet;
+        });
+      }
+    }, 100); // Shorter delay
+    
+    return () => clearTimeout(timer);
+  }, [slidePercentage, videos.length, duplicatedVideos.length]);
+
+  // Aggressively load items as carousel moves - load ALL visible items plus large buffer
+  useEffect(() => {
+    if (duplicatedVideos.length === 0) return;
+    
+    // Calculate how many items should be visible
+    const slidePercent = typeof slidePercentage === 'number' ? slidePercentage : parseFloat(String(slidePercentage).replace('%', ''));
+    const visibleCount = Math.ceil(100 / slidePercent);
+    
+    // Load all items in current viewport plus large buffer on both sides (3x visible count)
+    const buffer = visibleCount * 3; // Very large buffer - 3x visible items on each side
+    const startIdx = Math.max(0, currentIndex - buffer);
+    const endIdx = Math.min(duplicatedVideos.length, currentIndex + visibleCount + buffer);
+    
+    const indicesToLoad: number[] = [];
+    for (let i = startIdx; i < endIdx; i++) {
+      indicesToLoad.push(i);
+    }
+    
+    if (indicesToLoad.length > 0) {
+      setLoadedItems((prev) => {
+        const newSet = new Set(prev);
+        indicesToLoad.forEach(idx => newSet.add(idx));
+        return newSet;
+      });
+    }
+  }, [currentIndex, slidePercentage, duplicatedVideos.length]);
+
+  // Also use IntersectionObserver as backup
+  useEffect(() => {
+    if (duplicatedVideos.length === 0) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(entry.target.getAttribute('data-index') || '0');
+            setLoadedItems((prev) => {
+              if (prev.has(index)) return prev;
+              const newSet = new Set(prev);
+              newSet.add(index);
+              return newSet;
+            });
+          }
+        });
+      },
+      {
+        rootMargin: '500px', // Very large margin to load ahead
+        threshold: 0, // Load as soon as any pixel is visible
+      }
+    );
+
+    // Observe all current refs
+    const observeAll = () => {
+      itemRefs.current.forEach((ref) => {
+        if (ref) {
+          try {
+            observer.observe(ref);
+          } catch (e) {
+            // Already observing, ignore
+          }
+        }
+      });
+    };
+
+    // Observe multiple times to catch all items
+    const timeouts = [50, 200, 500, 1000, 2000].map(delay => setTimeout(observeAll, delay));
+
+    return () => {
+      observer.disconnect();
+      timeouts.forEach(id => clearTimeout(id));
+    };
+  }, [currentIndex, duplicatedVideos.length]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -726,72 +862,134 @@ function ShortsCarousel({ videos, onVideoClick }: { videos: string[], onVideoCli
           transition: isTransitioning ? 'none' : 'transform 0.5s ease-in-out',
         }}
         w="100%"
+        minW="100%"
+        flexShrink={0}
       >
-        {[...videos, ...videos, ...videos].map((url, index) => (
-          <Box
-            key={`${url}-${index}`}
-            flex={`0 0 ${itemWidth}`}
-            maxW={itemWidth}
-            position="relative"
-            overflow="hidden"
-            borderRadius="xl"
-            bg="white"
-            borderWidth="2px"
-            borderColor="blue.200"
-            boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
-            _hover={{
-              borderColor: 'blue.500',
-              boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)',
-              transform: 'translateY(-4px)'
-            }}
-            transition="all 0.3s"
-            cursor="pointer"
-            onClick={() => onVideoClick(url)}
-          >
-            {/* Video Preview */}
+        {duplicatedVideos.map((url, index) => {
+          const shouldLoad = loadedItems.has(index);
+          
+          return (
             <Box
+              key={`${url}-${index}`}
+              ref={(el: HTMLDivElement | null) => {
+                if (el) {
+                  itemRefs.current.set(index, el);
+                  el.setAttribute('data-index', index.toString());
+                }
+              }}
+              flex={`0 0 ${itemWidth}`}
+              maxW={itemWidth}
               position="relative"
-              pb="177.78%" // 9:16 aspect ratio for shorts
               overflow="hidden"
-              bg="gray.200"
+              borderRadius="xl"
+              bg="white"
+              borderWidth="2px"
+              borderColor="blue.200"
+              boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
+              _hover={{
+                borderColor: 'blue.500',
+                boxShadow: '0 8px 24px rgba(59, 130, 246, 0.2)',
+                transform: 'translateY(-4px)'
+              }}
+              transition="all 0.3s"
+              cursor="pointer"
+              onClick={() => onVideoClick(url)}
             >
-              <motion.iframe
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  pointerEvents: 'none'
-                }}
-                src={convertToEmbedUrl(url, false)}
-                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              />
+              {/* Video Preview */}
+              <Box
+                position="relative"
+                pb="177.78%" // 9:16 aspect ratio for shorts
+                overflow="hidden"
+                bg="gray.200"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                {shouldLoad ? (
+                  <>
+                    <motion.iframe
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        pointerEvents: 'none'
+                      }}
+                      src={convertToEmbedUrl(url, false)}
+                      allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      loading="lazy"
+                      onError={(e) => {
+                        // Handle iframe load errors - show fallback
+                        const target = e.target as HTMLIFrameElement;
+                        const container = target.parentElement;
+                        if (container) {
+                          target.style.display = 'none';
+                          // Show fallback thumbnail if iframe fails
+                          const fallback = container.querySelector('.iframe-fallback');
+                          if (fallback) {
+                            (fallback as HTMLElement).style.display = 'flex';
+                          }
+                        }
+                      }}
+                    />
+                    {/* Fallback if iframe fails to load */}
+                    <Box
+                      className="iframe-fallback"
+                      position="absolute"
+                      top={0}
+                      left={0}
+                      width="100%"
+                      height="100%"
+                      display="none"
+                      alignItems="center"
+                      justifyContent="center"
+                      bgGradient="linear(to-br, blue.400, blue.300)"
+                    >
+                      <FaInstagram size={48} color="rgba(255,255,255,0.9)" />
+                    </Box>
+                  </>
+                ) : (
+                  <Box
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    width="100%"
+                    height="100%"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    bgGradient="linear(to-br, blue.400, blue.300)"
+                  >
+                    <FaInstagram size={32} color="rgba(255,255,255,0.8)" />
+                  </Box>
+                )}
+              </Box>
+              
+              {/* Instagram Badge Below Video */}
+              <Box
+                p={{ base: 2, md: 3 }}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                borderTopWidth="1px"
+                borderColor="gray.200"
+              >
+                <FaInstagram size={20} color="#E4405F" />
+              </Box>
             </Box>
-            
-            {/* Instagram Badge Below Video */}
-            <Box
-              p={{ base: 2, md: 3 }}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              borderTopWidth="1px"
-              borderColor="gray.200"
-            >
-              <FaInstagram size={20} color="#E4405F" />
-            </Box>
-          </Box>
-        ))}
+          );
+        })}
       </Box>
     </Box>
   );
 }
 
 export default function PortfolioSection() {
-  const ref = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<string>('');
-  const { setIsVideoPlaying } = useMusicStore();
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
   
   // Flatten portfolio groups into a single array
   const allPortfolioItems = portfolioGroups.flat();
@@ -828,19 +1026,34 @@ export default function PortfolioSection() {
     const embedUrl = convertToEmbedUrl(videoUrl);
     setSelectedVideo(embedUrl);
     setIsOpen(true);
-    setIsVideoPlaying(true); // Pause background music
   };
 
   const handleClose = () => {
     setIsOpen(false);
     setSelectedVideo('');
-    setIsVideoPlaying(false); // Resume background music
   };
+
+  // Monitor section visibility to pause 3D animation when not visible
+  useEffect(() => {
+    if (!sectionRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsSectionVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <Box
       id="portfolio"
-      ref={ref}
+      ref={sectionRef}
       minH="100vh"
       py={{ base: 12, md: 16, lg: 20 }}
       bg="#F8F9FA"
@@ -860,7 +1073,7 @@ export default function PortfolioSection() {
         pointerEvents="none"
       >
         <Box w="100%" h="100%" style={{ background: 'transparent' }}>
-          <PortfolioScene3D />
+          <PortfolioScene3D isVisible={isSectionVisible} />
         </Box>
       </Box>
       <Container maxW="1400px" position="relative" zIndex={1}>

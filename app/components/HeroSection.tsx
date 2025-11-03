@@ -6,7 +6,7 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { Suspense } from 'react';
 import { FaArrowDown, FaPlay } from 'react-icons/fa';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -108,12 +108,13 @@ function AnimatedReel() {
 }
 
 // Hero 3D Scene - Film Camera & Theater Mask representing Actor/Creator
-function Scene3D() {
+function Scene3D({ isVisible }: { isVisible: boolean }) {
   return (
     <Canvas 
       camera={{ position: [0, 0, 5], fov: 50 }}
-      gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}
+      gl={{ alpha: true, antialias: true }}
       style={{ background: 'transparent' }}
+      frameloop={isVisible ? 'always' : 'demand'}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.6} />
@@ -128,7 +129,7 @@ function Scene3D() {
         
         <OrbitControls 
           enableZoom={false} 
-          autoRotate 
+          autoRotate={isVisible}
           autoRotateSpeed={0.3}
           maxPolarAngle={Math.PI / 2}
           minPolarAngle={Math.PI / 2}
@@ -139,6 +140,26 @@ function Scene3D() {
 }
 
 export default function HeroSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [isSectionVisible, setIsSectionVisible] = useState(true); // Hero is visible by default
+
+  // Monitor section visibility to pause 3D animation when not visible
+  useEffect(() => {
+    if (!sectionRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsSectionVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const scrollToAbout = () => {
     const element = document.querySelector('#about');
     if (element) {
@@ -149,6 +170,7 @@ export default function HeroSection() {
   return (
     <Box
       id="hero"
+      ref={sectionRef}
       position="relative"
       minH="100vh"
       display="flex"
@@ -176,7 +198,7 @@ export default function HeroSection() {
             background: 'transparent',
           }}
         >
-          <Scene3D />
+          <Scene3D isVisible={isSectionVisible} />
         </Box>
       </Box>
 
